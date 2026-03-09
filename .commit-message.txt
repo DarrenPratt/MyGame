@@ -1,0 +1,9 @@
+feat: initial game implementation - Neon Ledger cyberpunk text adventure
+
+- Architecture designed by Johnny (ICommand pattern, IInputOutput abstraction)
+- Content created by Rogue (9 rooms, 8 items, stolen data storyline)
+- 114 xUnit tests written by River
+- Full C# implementation by Judy
+- All 114 tests passing
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

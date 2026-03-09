@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "assignments": [
+    {
+      "assignment_id": "mygame-20260309",
+      "project": "MyGame",
+      "universe": "Cyberpunk 2077",
+      "created_at": "2026-03-09T20:35:17Z",
+      "agents": [
+        { "name": "Johnny", "role": "Lead & Architect" },
+        { "name": "Judy", "role": "C# Developer" },
+        { "name": "Rogue", "role": "Content Designer" },
+        { "name": "River", "role": "Tester" }
+      ]
+    }
+  ]
+}

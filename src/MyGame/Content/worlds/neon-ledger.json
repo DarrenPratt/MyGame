@@ -1,0 +1,605 @@
+{
+  "title": "Neon Ledger",
+  "subtitle": "A Cyberpunk Text Adventure",
+  "introText": "You've been hired to infiltrate SynthCorp's data vaults and retrieve stolen research. Your fixer's last message burns on your wrist terminal: \"Package in the corp system. Get in, get the drive, get out.\"\n\nYou're in the alley behind The Byte Bar, neon shadows stretching across wet pavement. The data drive worth your life—and someone else's death—waits in the server room. Security won't stop you. The drones will.\n\nMake your move, runner.",
+  "startRoomId": "alley",
+  "winRoomId": "server",
+  "winMessage": "The server room hums around you. Rows of data towers stretch into the dark, their cooling vents exhaling cold air.\nYour hand trembles as you find the drive—sleek, iridescent, heavy with stolen secrets.\nAs you slip out through the service corridor, the sound of boots echoes in the distance, getting closer.\nBut you're already gone, the drive burning in your pocket like a piece of the future itself.\nYears of dead contacts. Years of narrow escapes. This changes everything.",
+  "rooms": [
+    {
+      "id": "alley",
+      "name": "Neon Alley",
+      "description": "Narrow, grimy, reeking of fermented synth-fuel and old blood. Fire escapes crisscross overhead, draped with dried cables and abandoned server boxes. A faded graffito glows faintly: \"THE LATTICE REMEMBERS.\" Puddles reflect fractured neon from the street beyond—The Byte Bar glows to the east, and tunnel grates lead down into the undercity.",
+      "narratorVariants": [
+        {
+          "requiredFlags": ["keycard_used"],
+          "requiredInventoryItems": [],
+          "description": "The alley is familiar now, your escape route clear in your mind. Sirens wail in the distance—drones are hunting. The bar door to the east looks safer than the tunnel descent. Choose fast."
+        },
+        {
+          "requiredFlags": [],
+          "requiredInventoryItems": ["drive"],
+          "description": "The alley feels alive with danger now. The data drive in your pocket is like carrying a bomb—SynthCorp's security will tear this city apart to find you. The tunnel entrance below glows with blue electric light, promising escape. Or the bar, still."
+        }
+      ],
+      "exits": [
+        {
+          "direction": "east",
+          "targetRoomId": "bar",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "down",
+          "targetRoomId": "tunnel",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["flyer"],
+      "npcIds": []
+    },
+    {
+      "id": "bar",
+      "name": "The Byte Bar",
+      "description": "A cramped hole-in-the-wall bar wedged between two corporate transit towers. Holographic drink menus flicker across scratched tables, casting sickly blue and pink light across everything. The bartender—a chrome-jawed synth with dead eyes—polishes glasses that never quite get clean. Rain drums against reinforced windows overlooking the street below.",
+      "narratorVariants": [
+        {
+          "requiredFlags": ["viktor_met"],
+          "requiredInventoryItems": [],
+          "description": "Viktor works the bar tonight, same as always. His chrome forearms catch the neon light as he pours. You know he could help, but he'll want to know what you're really after. The rooftop access is up those back stairs. East leads to the corporate plaza."
+        }
+      ],
+      "exits": [
+        {
+          "direction": "west",
+          "targetRoomId": "alley",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "east",
+          "targetRoomId": "plaza",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "up",
+          "targetRoomId": "rooftop",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["terminal"],
+      "npcIds": ["viktor"]
+    },
+    {
+      "id": "rooftop",
+      "name": "Rooftop Spans — Runner's Route",
+      "description": "A network of interconnected rooftops spanning three city blocks. Wind buffets the structure, carrying sounds of traffic and distant sirens. Makeshift bridges and zip-lines connect the buildings, weathered by constant use. From here, you can see all of Night City—neon towers stretching to the horizon, corporate megastructures looming like glass mountains. The freedom of the open air contrasts sharply with the oppression below.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "down",
+          "targetRoomId": "bar",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["keycard"],
+      "npcIds": ["mox"]
+    },
+    {
+      "id": "plaza",
+      "name": "SynthCorp Plaza",
+      "description": "All chrome and cold steel, a brutalist monument to corporate power. The plaza spans three levels, filled with corporate workers in expensive suits and security personnel in tactical gear. Holographic advertisements for neural implants and synthetic organs pulse from every surface. A fountain in the center runs with something that isn't quite water. Security cameras are everywhere—being here draws unwanted attention.",
+      "narratorVariants": [
+        {
+          "requiredFlags": ["cred_chip_obtained"],
+          "requiredInventoryItems": [],
+          "description": "The plaza is thick with security personnel today. You can feel the tension—corpo enforcers in sleek black armor, drones sweeping overhead. The checkpoint to the north is your gateway in, but the guards look hungry. With the cred chip, you might talk your way through."
+        }
+      ],
+      "exits": [
+        {
+          "direction": "west",
+          "targetRoomId": "bar",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "north",
+          "targetRoomId": "checkpoint",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "south",
+          "targetRoomId": "tunnel",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": [],
+      "npcIds": []
+    },
+    {
+      "id": "checkpoint",
+      "name": "Security Checkpoint",
+      "description": "A fortified security checkpoint marks the boundary between the public plaza and the corporate tower. Heavy blast doors frame the entrance. Two guards in tactical gear man the station, their eyes tracking every movement. Surveillance equipment lines the walls. The air crackles with tension—you can hear the hum of weapons charging, drones circling overhead. This is the choke point.",
+      "narratorVariants": [
+        {
+          "requiredFlags": ["guard_distracted"],
+          "requiredInventoryItems": [],
+          "description": "The guards are distracted—their comms are buzzing with activity. Something's happening deeper in the building, pulling their attention away. Now's your chance to slip through. The corridor north leads into the corporate heart."
+        },
+        {
+          "requiredFlags": ["guard_bribed"],
+          "requiredInventoryItems": [],
+          "description": "The guard at the gate nods slightly—you know where you stand with him now. He'll look the other way when you make your move. The lobby entrance north is clear. At least for now."
+        }
+      ],
+      "exits": [
+        {
+          "direction": "south",
+          "targetRoomId": "plaza",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "north",
+          "targetRoomId": "lobby",
+          "isLocked": true,
+          "requiredItemId": "cred_chip",
+          "description": "Reinforced security door. The guard eyes you with contempt. You'll need something to get past him."
+        }
+      ],
+      "itemIds": [],
+      "npcIds": ["guard"]
+    },
+    {
+      "id": "lobby",
+      "name": "Corp Lobby",
+      "description": "All chrome and cold steel, a brutalist monument to corporate power. The lobby spans three levels, filled with workers in expensive suits and security personnel in tactical gear. Holographic advertisements for neural implants pulse from every surface. A security door to the north leads deeper into the facility. Security cameras track every movement. Elevators hum behind frosted glass.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "south",
+          "targetRoomId": "checkpoint",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "north",
+          "targetRoomId": "server",
+          "isLocked": true,
+          "requiredItemId": "keycard",
+          "description": "A heavy security door. A card reader glows red beside it."
+        },
+        {
+          "direction": "west",
+          "targetRoomId": "corridor",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": [],
+      "npcIds": []
+    },
+    {
+      "id": "corridor",
+      "name": "Service Corridor",
+      "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A back exit sign glows faintly at the far end.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "east",
+          "targetRoomId": "lobby",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": [],
+      "npcIds": []
+    },
+    {
+      "id": "server",
+      "name": "Server Room — SynthCorp Research Archive",
+      "description": "A labyrinthine archive hidden beneath the corporate tower, sealed behind layers of encryption. Servers hum in endless rows, their light panels casting everything in harsh white and blue. Files and data are stored on holographic displays. This is where your target waits—the drive containing research that could bring down SynthCorp's entire neural implant division. The air is cold, precise, sterile. Condensation forms on your breath.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "south",
+          "targetRoomId": "lobby",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["drive"],
+      "npcIds": []
+    },
+    {
+      "id": "tunnel",
+      "name": "Underground Tunnel Network",
+      "description": "You slip down into the undercity—the sprawling network of tunnels that web beneath the city. Glowing cables strung across makeshift shelters cast everything in electric blue. The sound of machinery, voices, and distant music echoes through the passages. The air is thick and warm, smelling of ozone and grease. Runner dens and black-market tech shops cluster here in the shadows. This is where those unwanted by the megacorps have built a parallel civilization.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "up",
+          "targetRoomId": "alley",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "north",
+          "targetRoomId": "plaza",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        },
+        {
+          "direction": "south",
+          "targetRoomId": "den",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["repair_kit"],
+      "npcIds": []
+    },
+    {
+      "id": "den",
+      "name": "Hacker's Den",
+      "description": "A sprawling underground hideout carved into the undercity's bones. Jury-rigged servers and salvaged neural jacks line the walls, their lights pulsing in rhythm. The smell of fried circuits mingles with cheap synth-coffee and stim-sticks. Runners, netrunners, and black-market dealers move through the shadows like ghosts. Information trades hands here—gossip, credentials, access codes. The runners call it the Den. Everyone else just calls it home.",
+      "narratorVariants": [],
+      "exits": [
+        {
+          "direction": "north",
+          "targetRoomId": "tunnel",
+          "isLocked": false,
+          "requiredItemId": null,
+          "description": null
+        }
+      ],
+      "itemIds": ["cred_chip"],
+      "npcIds": []
+    }
+  ],
+  "items": [
+    {
+      "id": "flyer",
+      "name": "Crumpled Flyer",
+      "description": "A crumpled flyer wedged under a fire escape. The logo reads 'THE BYTE BAR — one block east.' Someone's scrawled underneath: 'Ask for Viktor. He knows the score.' Useful for orientation.",
+      "canPickUp": true,
+      "useTargetId": null,
+      "useMessage": null
+    },
+    {
+      "id": "terminal",
+      "name": "Broken Terminal",
+      "description": "A heavy terminal from decades past, still glowing faintly but fried beyond repair. The screen loops a SynthCorp logo from twenty years ago. Bolted to the bar, immovable. The runner community uses it as a landmark.",
+      "canPickUp": false,
+      "useTargetId": null,
+      "useMessage": null
+    },
+    {
+      "id": "keycard",
+      "name": "Corp Keycard",
+      "description": "A corporate keycard, worn but functional. SynthCorp Security Division—badge number erased with acid. The RFID chip inside still works. Someone dropped this in a hurry. It looks like it would open a security door.",
+      "canPickUp": true,
+      "useTargetId": "north",
+      "useMessage": "The keycard slides into the reader. The light flicks from red to green. A soft click—the security door unlocks with a pneumatic hiss."
+    },
+    {
+      "id": "drive",
+      "name": "Data Drive",
+      "description": "A sleek data drive etched with corporate security markers. It contains the research data that could expose SynthCorp's illegal neural implant experiments. This is what you came for. Years of work, dead contacts, all leading to this moment.",
+      "canPickUp": true,
+      "useTargetId": null,
+      "useMessage": null
+    },
+    {
+      "id": "repair_kit",
+      "name": "Black-Market Repair Kit",
+      "description": "A weathered case containing tools and spare parts for fixing damaged tech. Found in the undercity, it's useful for repairing equipment or bypassing simple security locks.",
+      "canPickUp": true,
+      "useTargetId": null,
+      "useMessage": null
+    },
+    {
+      "id": "cred_chip",
+      "name": "Arasaka Cred Chip",
+      "description": "A sleek corporate credit chip bearing Arasaka's corporate logo. It's loaded with enough credits to bribe most security personnel. Black-market value is high, but it's worth more as a ticket past the checkpoint.",
+      "canPickUp": true,
+      "useTargetId": "north",
+      "useMessage": "You slide the cred chip across the desk. The guard's eyes light up—this is enough to make him very cooperative. The locked door to the north slides open silently."
+    }
+  ],
+  "npcs": [
+    {
+      "id": "viktor",
+      "name": "Viktor",
+      "description": "A grizzled fixer with chrome-plated forearms and eyes that have seen too much. He tends bar at The Byte Bar, serving drinks and information in equal measure. His chrome catches the neon light, reflecting decades of street work.",
+      "dialogue": [
+        {
+          "id": "start",
+          "text": "Hey runner. Eyes like that, you're either lost or you're running a job. Which is it?",
+          "responses": [
+            {
+              "text": "I'm looking for SynthCorp.",
+              "nextNodeId": "synthcorp"
+            },
+            {
+              "text": "Just passing through.",
+              "nextNodeId": "passing"
+            },
+            {
+              "text": "Nothing. Forget it.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "synthcorp",
+          "text": "SynthCorp. Ha. You've got stones, runner. Their corporate plaza is east of here. Security checkpoint between the plaza and the lobby—that's where it gets tight. Guards there are greedy corp-sec. Everyone's got a price. Word is they're partial to Arasaka cred chips. You can find one in the undercity if you know where to look.",
+          "responses": [
+            {
+              "text": "What about the rooftops?",
+              "nextNodeId": "rooftops"
+            },
+            {
+              "text": "Any other way in?",
+              "nextNodeId": "other_way"
+            },
+            {
+              "text": "Thanks for the info.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "rooftops",
+          "text": "Smart thinking. The rooftops are a runner's highway—get to them and you're halfway free. There's a girl up there, goes by Mox. She knows the routes. Careful though—drones patrol at night.",
+          "responses": [
+            {
+              "text": "I'll check it out.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "other_way",
+          "text": "There's always another way in the undercity. But you'll need something to get past the guards at the checkpoint. Currency works better than bullets down here.",
+          "responses": [
+            {
+              "text": "Understood.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "passing",
+          "text": "Sure you are. Buy a drink or move on, choom.",
+          "responses": [
+            {
+              "text": "See ya.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "thanks",
+          "text": "Stay low, stay fast. And don't get jacked.",
+          "responses": [
+            {
+              "text": "Will do.",
+              "nextNodeId": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mox",
+      "name": "Mox",
+      "description": "A sharp-eyed runner with a shock of electric blue hair and a military-grade neural jack glowing at her temple. She moves across the rooftops like she was born there. Leather jacket covered in patches from a dozen corporate wars.",
+      "dialogue": [
+        {
+          "id": "start",
+          "text": "New face on the roofs. You running a job or just sightseeing? Either way, the drones don't care—they shoot first.",
+          "responses": [
+            {
+              "text": "I'm going after SynthCorp.",
+              "nextNodeId": "synthcorp"
+            },
+            {
+              "text": "Just looking around.",
+              "nextNodeId": "looking"
+            },
+            {
+              "text": "None of your business.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "synthcorp",
+          "text": "Balls or brains? SynthCorp's a hard target. The checkpoint guards are your bottleneck—they control access to the corporate heart. You'll need leverage. Get down to the undercity, find the Hacker's Den. There's a cred chip there, black market trade. That'll get you past security.",
+          "responses": [
+            {
+              "text": "How do I get to the undercity?",
+              "nextNodeId": "undercity"
+            },
+            {
+              "text": "What if I can't get the chip?",
+              "nextNodeId": "no_chip"
+            },
+            {
+              "text": "Thanks for the help.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "undercity",
+          "text": "Drop down from the alley—there's tunnel grates. They'll take you under. Fair warning: the undercity's got its own rules. Respect the runners down there, and they'll respect your heat.",
+          "responses": [
+            {
+              "text": "Got it.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "no_chip",
+          "text": "Then you're dead meat at the checkpoint. Those guards won't move without serious juice. Either find the cred chip or find another route. No shortcuts in this game.",
+          "responses": [
+            {
+              "text": "I'll figure something out.",
+              "nextNodeId": "thanks"
+            }
+          ]
+        },
+        {
+          "id": "looking",
+          "text": "Well, don't look around too long. Corporate drones patrol these roofs on the hour. You get tagged, you're fried.",
+          "responses": [
+            {
+              "text": "I'll keep moving.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "thanks",
+          "text": "Good luck out there, runner. Try not to get caught.",
+          "responses": [
+            {
+              "text": "Will do.",
+              "nextNodeId": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "name": "Guard",
+      "description": "A hardened security contractor in sleek black tactical armor. SynthCorp pays well. His hand rests on a plasma rifle with casual menace. Eyes that track every movement—this one's seen combat.",
+      "dialogue": [
+        {
+          "id": "start",
+          "text": "Stop. Credentials. Now.",
+          "responses": [
+            {
+              "text": "I have a credential chip.",
+              "nextNodeId": "cred"
+            },
+            {
+              "text": "I'm just passing through.",
+              "nextNodeId": "passing"
+            },
+            {
+              "text": "Look, we can work this out.",
+              "nextNodeId": "negotiate"
+            }
+          ]
+        },
+        {
+          "id": "cred",
+          "text": "Show me. Make it quick.",
+          "responses": [
+            {
+              "text": "Here—take a look.",
+              "nextNodeId": "cred_check"
+            }
+          ]
+        },
+        {
+          "id": "cred_check",
+          "text": "Arasaka? That's... acceptable. You're cleared to proceed. Don't cause trouble in there.",
+          "responses": [
+            {
+              "text": "Won't be a problem.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "passing",
+          "text": "Passing through? Without clearance? I don't think so. You need credentials, a retinal scan, or a very good reason. What've you got?",
+          "responses": [
+            {
+              "text": "Never mind, I'm leaving.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What if I had a reason?",
+              "nextNodeId": "reason"
+            }
+          ]
+        },
+        {
+          "id": "reason",
+          "text": "A reason? Convince me, runner. But make it good—I'm paid to be skeptical.",
+          "responses": [
+            {
+              "text": "I'm just trying to get to the other side.",
+              "nextNodeId": "weak_reason"
+            }
+          ]
+        },
+        {
+          "id": "weak_reason",
+          "text": "That's not a reason. That's an excuse. You're not getting through without proper authorization. Move along.",
+          "responses": [
+            {
+              "text": "Understood.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "negotiate",
+          "text": "Work it out? I like your style, runner. But SynthCorp pays better than you can probably bribe. Unless... you've got something valuable. Arasaka cred chip, maybe? That would make my shift a lot more interesting.",
+          "responses": [
+            {
+              "text": "What if I can get you one?",
+              "nextNodeId": "bribe_offer"
+            },
+            {
+              "text": "Forget it then.",
+              "nextNodeId": null
+            }
+          ]
+        },
+        {
+          "id": "bribe_offer",
+          "text": "Get me a chip and you're golden. Bring it back, and I'll personally escort you through. Until then, you're blocked. Standard protocol.",
+          "responses": [
+            {
+              "text": "I'll be back.",
+              "nextNodeId": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

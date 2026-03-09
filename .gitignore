@@ -1,0 +1,23 @@
+# .NET build outputs
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+
+# Coverage outputs
+coverage/
+*.coverage
+*.coveragexml
+**/TestResults/
+*.msCoverageSourceRootsMapping_*
+*.CoverletSourceRootsMapping_*
+
+# Squad: ignore runtime state (logs, inbox, sessions)
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+# Squad: SubSquad activation file (local to this machine)
+.squad-workstream

@@ -1,0 +1,80 @@
+namespace MyGame.Commands;
+
+using MyGame.Engine;
+using MyGame.Models;
+
+public class TalkCommand : ICommand
+{
+    public string Verb => "talk";
+    public string[] Aliases => ["speak"];
+    public string HelpText => "Talk to someone. Usage: talk [npc]";
+
+    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
+    {
+        if (string.IsNullOrWhiteSpace(command.Noun))
+        {
+            io.WriteLine("Talk to whom?");
+            return;
+        }
+
+        var noun = command.Noun.Trim();
+        if (noun.StartsWith("to ", StringComparison.OrdinalIgnoreCase))
+            noun = noun[3..].Trim();
+
+        if (string.IsNullOrWhiteSpace(noun))
+        {
+            io.WriteLine("Talk to whom?");
+            return;
+        }
+
+        var npc = state.CurrentRoom.Npcs.FirstOrDefault(n =>
+            n.Id.Equals(noun, StringComparison.OrdinalIgnoreCase)
+            || n.Name.Contains(noun, StringComparison.OrdinalIgnoreCase));
+
+        if (npc is null)
+        {
+            io.WriteLine($"No one named \"{noun}\" is here.");
+            return;
+        }
+
+        var nodes = npc.Dialogue.ToDictionary(node => node.Id, StringComparer.OrdinalIgnoreCase);
+        var current = npc.Dialogue.FirstOrDefault();
+        if (current is null)
+        {
+            io.WriteLine($"{ColorConsole.Yellow(npc.Name)} has nothing to say.");
+            return;
+        }
+
+        while (true)
+        {
+            io.WriteLine($"{ColorConsole.Yellow(npc.Name)}: {current.Text}");
+
+            if (current.Responses.Count == 0)
+                return;
+
+            for (var i = 0; i < current.Responses.Count; i++)
+                io.WriteLine($"  {ColorConsole.Green($"{i + 1}.")} {current.Responses[i].Text}");
+
+            io.Write("> ");
+            var input = io.ReadLine();
+            if (!int.TryParse(input, out var choice) || choice < 1 || choice > current.Responses.Count)
+            {
+                io.WriteLine("You end the conversation.");
+                return;
+            }
+
+            var response = current.Responses[choice - 1];
+            if (response.NextNodeId is null)
+            {
+                io.WriteLine("Goodbye.");
+                return;
+            }
+
+            if (!nodes.TryGetValue(response.NextNodeId, out current))
+            {
+                io.WriteLine("Goodbye.");
+                return;
+            }
+        }
+    }
+}
