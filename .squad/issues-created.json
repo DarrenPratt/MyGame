@@ -1,0 +1,97 @@
+[
+  {
+    "milestone": 1,
+    "title": "Wire up Program.cs entry point and game loop",
+    "number": 1
+  },
+  {
+    "milestone": 1,
+    "title": "Implement CommandParser — tokenize and normalize player input",
+    "number": 2
+  },
+  {
+    "milestone": 1,
+    "title": "Implement ColorConsole — themed output with ANSI color support",
+    "number": 3
+  },
+  {
+    "milestone": 1,
+    "title": "Complete NarratorEngine — variant narrator output",
+    "number": 4
+  },
+  {
+    "milestone": 1,
+    "title": "Build WorldBuilder with full Neon Ledger content",
+    "number": 5
+  },
+  {
+    "milestone": 1,
+    "title": "End-to-end smoke test — game starts and player can navigate",
+    "number": 6
+  },
+  {
+    "milestone": 2,
+    "title": "Implement win condition — escape with data_chip triggers victory",
+    "number": 7
+  },
+  {
+    "milestone": 2,
+    "title": "Implement lose condition — drone capture ends the game",
+    "number": 8
+  },
+  {
+    "milestone": 2,
+    "title": "Implement TalkCommand NPC interactions",
+    "number": 9
+  },
+  {
+    "milestone": 2,
+    "title": "UseCommand — maze_key opens The Lattice security doors",
+    "number": 10
+  },
+  {
+    "milestone": 2,
+    "title": "UseCommand — neon_jack bypasses locked doors (with drone risk)",
+    "number": 11
+  },
+  {
+    "milestone": 2,
+    "title": "Write room and item descriptions with full cyberpunk flavor text",
+    "number": 12
+  },
+  {
+    "milestone": 2,
+    "title": "Write command tests — GoCommand, LookCommand, TakeCommand",
+    "number": 13
+  },
+  {
+    "milestone": 3,
+    "title": "Save/Load — verify SaveCommand and LoadCommand round-trip",
+    "number": 14
+  },
+  {
+    "milestone": 3,
+    "title": "Complete test suite — all command and engine tests green",
+    "number": 15
+  },
+  {
+    "milestone": 3,
+    "title": "Edge case hardening — invalid input, missing items, blocked exits",
+    "number": 16
+  },
+  {
+    "milestone": 3,
+    "title": "JsonWorldLoader — validate world data loads correctly from JSON",
+    "number": 17
+  },
+  {
+    "milestone": 3,
+    "title": "Final playthrough — complete Neon Ledger from start to win",
+    "number": 18
+  },
+  {
+    "milestone": 3,
+    "title": "README — add gameplay instructions and command reference",
+    "number": 19
+  }
+]
