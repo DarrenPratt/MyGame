@@ -21,7 +21,7 @@ public class GoCommand : ICommand
 
         if (direction is null)
         {
-            io.WriteLine("Go where? Specify a direction (north, south, east, west, up, down, etc.).");
+            io.WriteLine(ColorConsole.Error("Go where? Specify a direction (north, south, east, west, up, down, etc.)."));
             return;
         }
 
@@ -31,7 +31,7 @@ public class GoCommand : ICommand
         var room = state.CurrentRoom;
         if (!room.Exits.TryGetValue(direction, out var exit))
         {
-            io.WriteLine($"You can't go {direction} from here.");
+            io.WriteLine(ColorConsole.Error($"You can't go {direction} from here."));
             return;
         }
 
@@ -40,7 +40,13 @@ public class GoCommand : ICommand
             var needed = exit.RequiredItemId is not null
                 ? $"You need the {exit.RequiredItemId.Replace('_', ' ')} to proceed."
                 : "The way is locked.";
-            io.WriteLine($"The way {direction} is blocked. {needed}");
+            io.WriteLine(ColorConsole.Error($"The way {direction} is blocked. {needed}"));
+            return;
+        }
+
+        if (!state.Rooms.ContainsKey(exit.TargetRoomId))
+        {
+            io.WriteLine(ColorConsole.Error($"You can't go {direction} — the path leads nowhere. (World error)"));
             return;
         }
 

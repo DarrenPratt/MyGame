@@ -1,4 +1,3 @@
-using MyGame.Content;
 using MyGame.Engine;
 using MyGame.Models;
 using Xunit;
@@ -6,13 +5,18 @@ using Xunit;
 namespace MyGame.Tests;
 
 /// <summary>
-/// Tests that verify the game world built by WorldBuilder is internally consistent.
+/// Tests that verify the game world loaded from neon-ledger.json is internally consistent.
 /// No game logic — just data integrity checks.
 /// </summary>
 public class GameWorldTests
 {
-    // Cache the world once per test class instance; WorldBuilder is deterministic.
-    private readonly GameState _world = WorldBuilder.Build();
+    private readonly GameState _world;
+
+    public GameWorldTests()
+    {
+        var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
+        _world = new JsonWorldLoader().Load(worldPath).State;
+    }
 
     // ──────────────────────────────────────────────
     // Expected world constants (from ARCHITECTURE.md V1 World Map)
@@ -152,12 +156,14 @@ public class GameWorldTests
     [Theory]
     [InlineData("alley", "east", "bar")]
     [InlineData("bar", "west", "alley")]
-    [InlineData("bar", "east", "lobby")]
-    [InlineData("lobby", "west", "bar")]
+    [InlineData("bar", "east", "plaza")]
+    [InlineData("plaza", "west", "bar")]
     [InlineData("bar", "up", "rooftop")]
     [InlineData("rooftop", "down", "bar")]
     [InlineData("lobby", "north", "server")]
     [InlineData("server", "south", "lobby")]
+    [InlineData("lobby", "west", "corridor")]
+    [InlineData("corridor", "east", "lobby")]
     public void Room_HasExpectedExit(string fromRoom, string direction, string toRoom)
     {
         Assert.True(_world.Rooms.ContainsKey(fromRoom), $"Room '{fromRoom}' not found.");

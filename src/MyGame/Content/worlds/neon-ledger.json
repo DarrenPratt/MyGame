@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "Neon Ledger",
   "subtitle": "A Cyberpunk Text Adventure",
   "introText": "You've been hired to infiltrate SynthCorp's data vaults and retrieve stolen research. Your fixer's last message burns on your wrist terminal: \"Package in the corp system. Get in, get the drive, get out.\"\n\nYou're in the alley behind The Byte Bar, neon shadows stretching across wet pavement. The data drive worth your life—and someone else's death—waits in the server room. Security won't stop you. The drones will.\n\nMake your move, runner.",
@@ -12,13 +12,17 @@
       "description": "Narrow, grimy, reeking of fermented synth-fuel and old blood. Fire escapes crisscross overhead, draped with dried cables and abandoned server boxes. A faded graffito glows faintly: \"THE LATTICE REMEMBERS.\" Puddles reflect fractured neon from the street beyond—The Byte Bar glows to the east, and tunnel grates lead down into the undercity.",
       "narratorVariants": [
         {
-          "requiredFlags": ["keycard_used"],
+          "requiredFlags": [
+            "keycard_used"
+          ],
           "requiredInventoryItems": [],
           "description": "The alley is familiar now, your escape route clear in your mind. Sirens wail in the distance—drones are hunting. The bar door to the east looks safer than the tunnel descent. Choose fast."
         },
         {
           "requiredFlags": [],
-          "requiredInventoryItems": ["drive"],
+          "requiredInventoryItems": [
+            "drive"
+          ],
           "description": "The alley feels alive with danger now. The data drive in your pocket is like carrying a bomb—SynthCorp's security will tear this city apart to find you. The tunnel entrance below glows with blue electric light, promising escape. Or the bar, still."
         }
       ],
@@ -38,7 +42,9 @@
           "description": null
         }
       ],
-      "itemIds": ["flyer"],
+      "itemIds": [
+        "flyer"
+      ],
       "npcIds": []
     },
     {
@@ -47,7 +53,14 @@
       "description": "A cramped hole-in-the-wall bar wedged between two corporate transit towers. Holographic drink menus flicker across scratched tables, casting sickly blue and pink light across everything. The bartender—a chrome-jawed synth with dead eyes—polishes glasses that never quite get clean. Rain drums against reinforced windows overlooking the street below.",
       "narratorVariants": [
         {
-          "requiredFlags": ["viktor_met"],
+          "requiredFlags": [],
+          "requiredInventoryItems": [],
+          "description": "Neon flickers across the bar. Holographic drink menus cast sickly pink light on empty glasses. Someone left a message on the terminal—your name isn't on it, but it might as well be. The chrome-jawed synth bartender watches you without watching you."
+        },
+        {
+          "requiredFlags": [
+            "viktor_met"
+          ],
           "requiredInventoryItems": [],
           "description": "Viktor works the bar tonight, same as always. His chrome forearms catch the neon light as he pours. You know he could help, but he'll want to know what you're really after. The rooftop access is up those back stairs. East leads to the corporate plaza."
         }
@@ -75,8 +88,12 @@
           "description": null
         }
       ],
-      "itemIds": ["terminal"],
-      "npcIds": ["viktor"]
+      "itemIds": [
+        "terminal"
+      ],
+      "npcIds": [
+        "viktor"
+      ]
     },
     {
       "id": "rooftop",
@@ -92,8 +109,12 @@
           "description": null
         }
       ],
-      "itemIds": ["keycard"],
-      "npcIds": ["mox"]
+      "itemIds": [
+        "keycard"
+      ],
+      "npcIds": [
+        "mox"
+      ]
     },
     {
       "id": "plaza",
@@ -101,7 +122,9 @@
       "description": "All chrome and cold steel, a brutalist monument to corporate power. The plaza spans three levels, filled with corporate workers in expensive suits and security personnel in tactical gear. Holographic advertisements for neural implants and synthetic organs pulse from every surface. A fountain in the center runs with something that isn't quite water. Security cameras are everywhere—being here draws unwanted attention.",
       "narratorVariants": [
         {
-          "requiredFlags": ["cred_chip_obtained"],
+          "requiredFlags": [
+            "cred_chip_obtained"
+          ],
           "requiredInventoryItems": [],
           "description": "The plaza is thick with security personnel today. You can feel the tension—corpo enforcers in sleek black armor, drones sweeping overhead. The checkpoint to the north is your gateway in, but the guards look hungry. With the cred chip, you might talk your way through."
         }
@@ -138,12 +161,16 @@
       "description": "A fortified security checkpoint marks the boundary between the public plaza and the corporate tower. Heavy blast doors frame the entrance. Two guards in tactical gear man the station, their eyes tracking every movement. Surveillance equipment lines the walls. The air crackles with tension—you can hear the hum of weapons charging, drones circling overhead. This is the choke point.",
       "narratorVariants": [
         {
-          "requiredFlags": ["guard_distracted"],
+          "requiredFlags": [
+            "guard_distracted"
+          ],
           "requiredInventoryItems": [],
           "description": "The guards are distracted—their comms are buzzing with activity. Something's happening deeper in the building, pulling their attention away. Now's your chance to slip through. The corridor north leads into the corporate heart."
         },
         {
-          "requiredFlags": ["guard_bribed"],
+          "requiredFlags": [
+            "guard_bribed"
+          ],
           "requiredInventoryItems": [],
           "description": "The guard at the gate nods slightly—you know where you stand with him now. He'll look the other way when you make your move. The lobby entrance north is clear. At least for now."
         }
@@ -165,7 +192,9 @@
         }
       ],
       "itemIds": [],
-      "npcIds": ["guard"]
+      "npcIds": [
+        "guard"
+      ]
     },
     {
       "id": "lobby",
@@ -229,7 +258,9 @@
           "description": null
         }
       ],
-      "itemIds": ["drive"],
+      "itemIds": [
+        "drive"
+      ],
       "npcIds": []
     },
     {
@@ -260,7 +291,9 @@
           "description": null
         }
       ],
-      "itemIds": ["repair_kit"],
+      "itemIds": [
+        "repair_kit"
+      ],
       "npcIds": []
     },
     {
@@ -277,7 +310,9 @@
           "description": null
         }
       ],
-      "itemIds": ["cred_chip"],
+      "itemIds": [
+        "cred_chip"
+      ],
       "npcIds": []
     }
   ],
@@ -601,5 +636,10 @@
         }
       ]
     }
+  ],
+  "loseMessage": "Red warning lights flood the street. SynthCorp security drones converge on your position, their scanner locks painting you in deadly light. Your wrist terminal screams alerts. You've lost the game—and possibly much worse. The last thing you see is a drone's targeting reticle zeroing in. SynthCorp doesn't take data theft lightly.",
+  "highRiskRoomIds": [
+    "plaza",
+    "checkpoint"
   ]
 }

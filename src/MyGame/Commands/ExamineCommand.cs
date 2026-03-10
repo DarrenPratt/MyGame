@@ -13,7 +13,7 @@ public class ExamineCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine("Examine what?");
+            io.WriteLine(ColorConsole.Error("Examine what?"));
             return;
         }
 
@@ -24,7 +24,7 @@ public class ExamineCommand : ICommand
             return;
         }
 
-        io.WriteLine($"You don't see any \"{command.Noun}\" to examine.");
+        io.WriteLine(ColorConsole.Error($"You don't see any \"{command.Noun}\" to examine."));
     }
 
     private static Item? FindItem(string noun, GameState state)

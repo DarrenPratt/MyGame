@@ -1,22 +1,16 @@
 using MyGame.Engine;
 using MyGame.Commands;
-using MyGame.Content;
+
+ColorConsole.Initialize();
 
 var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
 
-LoadedWorld? loaded = null;
-GameState state;
+if (!File.Exists(worldPath))
+    throw new FileNotFoundException($"World file not found: {worldPath}");
 
-if (File.Exists(worldPath))
-{
-    var loader = new JsonWorldLoader();
-    loaded = loader.Load(worldPath);
-    state = loaded.State;
-}
-else
-{
-    state = WorldBuilder.Build();
-}
+var loader = new JsonWorldLoader();
+var loaded = loader.Load(worldPath);
+var state = loaded.State;
 
 var registry = new CommandRegistry();
 registry.Register(new LookCommand());

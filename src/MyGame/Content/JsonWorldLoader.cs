@@ -9,7 +9,8 @@ public record LoadedWorld(
     string WinMessage,
     string Title,
     string Subtitle,
-    string IntroText)
+    string IntroText,
+    string LoseMessage)
 {
     public string CurrentRoomId => State.CurrentRoomId;
     public Dictionary<string, Room> Rooms => State.Rooms;
@@ -80,7 +81,10 @@ public class JsonWorldLoader
             ItemCatalog = itemCatalog,
             NpcCatalog = npcCatalog,
             Rooms = rooms,
-            WinRoomId = definition.WinRoomId
+            WinRoomId = definition.WinRoomId,
+            HighRiskRoomIds = definition.HighRiskRoomIds is { Count: > 0 } ids
+                ? new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(["plaza", "checkpoint"], StringComparer.OrdinalIgnoreCase)
         };
 
         return new LoadedWorld(
@@ -89,7 +93,8 @@ public class JsonWorldLoader
             definition.WinMessage,
             definition.Title,
             definition.Subtitle,
-            definition.IntroText);
+            definition.IntroText,
+            definition.LoseMessage);
     }
 
     private class WorldDefinition
@@ -97,6 +102,8 @@ public class JsonWorldLoader
         public string StartRoomId { get; set; } = string.Empty;
         public string WinRoomId { get; set; } = string.Empty;
         public string WinMessage { get; set; } = string.Empty;
+        public string LoseMessage { get; set; } = string.Empty;
+        public List<string>? HighRiskRoomIds { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Subtitle { get; set; } = string.Empty;
         public string IntroText { get; set; } = string.Empty;
