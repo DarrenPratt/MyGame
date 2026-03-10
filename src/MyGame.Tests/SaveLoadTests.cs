@@ -173,4 +173,129 @@ public class SaveLoadTests : IDisposable
         // Assert
         Assert.True(io.OutputContains("error") || io.OutputContains("invalid") || io.OutputContains("corrupt"));
     }
+
+    // -------------------------------------------------------------------------
+    // Issue #35 — Save/Load State Corruption Tests
+    // These tests prove DroneThreatLevel and exit locked states survive a
+    // save/load round-trip. Tests marked TODO will pass after #35 is fixed.
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Creates a two-room state where room_a has a north exit that starts LOCKED.
+    /// Used to test exit-state persistence.
+    /// </summary>
+    private GameState TwoRoomStateWithLockedExit()
+    {
+        var roomA = new Room { Id = "room_a", Name = "Room A", Description = "A plain room." };
+        var roomB = new Room { Id = "room_b", Name = "Room B", Description = "Another room." };
+        roomA.Exits["north"] = new Exit { Direction = "north", TargetRoomId = "room_b", IsLocked = true };
+        roomB.Exits["south"] = new Exit { Direction = "south", TargetRoomId = "room_a" };
+        return new GameState
+        {
+            CurrentRoomId = "room_a",
+            Rooms = new Dictionary<string, Room> { ["room_a"] = roomA, ["room_b"] = roomB }
+        };
+    }
+
+    [Fact]
+    public void SaveLoad_PreservesDroneThreatLevel()
+    {
+        // Arrange
+        var state = WorldFactory.SingleRoomState();
+        state.DroneThreatLevel = 3;
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "threat-level"), state, new FakeInputOutput());
+
+        // Act — load into a fresh state (default DroneThreatLevel = 0)
+        var newState = WorldFactory.SingleRoomState();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "threat-level"), newState, new FakeInputOutput());
+
+        // TODO: will pass after #35 is fixed (SaveCommand must serialize DroneThreatLevel)
+        Assert.Equal(3, newState.DroneThreatLevel);
+    }
+
+    [Fact]
+    public void SaveLoad_PreservesDroneThreatThreshold()
+    {
+        // DroneThreatThreshold is init-only; construct the source state with the custom value directly.
+        // NOTE: Fixing this test end-to-end also requires DroneThreatThreshold to become mutable
+        // (change `init` → `set` in GameState) so LoadCommand can restore it.
+        var room = new Room { Id = "test_room", Name = "Test Room", Description = "A test room." };
+        var state = new GameState
+        {
+            CurrentRoomId = "test_room",
+            Rooms = new Dictionary<string, Room> { ["test_room"] = room },
+            DroneThreatThreshold = 6   // non-default (default is 4)
+        };
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "threat-thresh"), state, new FakeInputOutput());
+
+        // Act — load into a fresh state that has the default threshold (4)
+        var newState = WorldFactory.SingleRoomState();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "threat-thresh"), newState, new FakeInputOutput());
+
+        // TODO: will pass after #35 is fixed (requires DroneThreatThreshold to become settable)
+        Assert.Equal(6, newState.DroneThreatThreshold);
+    }
+
+    [Fact]
+    public void SaveLoad_PreservesUnlockedExit()
+    {
+        // Arrange — start with a locked exit, then unlock it before saving
+        var state = TwoRoomStateWithLockedExit();
+        state.Rooms["room_a"].Exits["north"].IsLocked = false;  // player unlocked the door
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "unlock-exit"), state, new FakeInputOutput());
+
+        // Act — load into a fresh state where that exit is locked again by default
+        var newState = TwoRoomStateWithLockedExit();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "unlock-exit"), newState, new FakeInputOutput());
+
+        // TODO: will pass after #35 is fixed (LoadCommand must restore exit IsLocked states)
+        Assert.False(newState.Rooms["room_a"].Exits["north"].IsLocked, "Exit should remain unlocked after reload");
+    }
+
+    [Fact]
+    public void SaveLoad_DroneThreatZeroByDefault_NotCorrupted()
+    {
+        // Arrange — default DroneThreatLevel starts at 0
+        var state = WorldFactory.SingleRoomState();
+        Assert.Equal(0, state.DroneThreatLevel); // sanity-check the starting condition
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "zero-threat"), state, new FakeInputOutput());
+
+        // Act
+        var newState = WorldFactory.SingleRoomState();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "zero-threat"), newState, new FakeInputOutput());
+
+        // A 0 value must survive the round-trip — it must not be silently dropped or treated as null
+        Assert.Equal(0, newState.DroneThreatLevel);
+    }
+
+    [Fact]
+    public void SaveLoad_NonZeroThreatSurvivesRoundtrip()
+    {
+        // Player must not be able to exploit save/load to reset their drone threat level
+        var state = WorldFactory.SingleRoomState();
+        state.DroneThreatLevel = 5;  // high-risk accumulated threat
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "non-zero-threat"), state, new FakeInputOutput());
+
+        // Act — load into a fresh state (default DroneThreatLevel = 0)
+        var newState = WorldFactory.SingleRoomState();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "non-zero-threat"), newState, new FakeInputOutput());
+
+        // TODO: will pass after #35 is fixed (SaveCommand must serialize DroneThreatLevel)
+        Assert.Equal(5, newState.DroneThreatLevel);
+    }
+
+    [Fact]
+    public void SaveLoad_LockedExitRemainsLockedAfterReload()
+    {
+        // Baseline regression guard: a locked exit must stay locked across a save/load cycle
+        var state = TwoRoomStateWithLockedExit();
+        // Do NOT unlock the exit before saving
+        new SaveCommand(_testDirectory).Execute(new ParsedCommand("save", "locked-exit"), state, new FakeInputOutput());
+
+        // Act
+        var newState = TwoRoomStateWithLockedExit();
+        new LoadCommand(_testDirectory).Execute(new ParsedCommand("load", "locked-exit"), newState, new FakeInputOutput());
+
+        Assert.True(newState.Rooms["room_a"].Exits["north"].IsLocked, "Locked exit must remain locked after reload");
+    }
 }

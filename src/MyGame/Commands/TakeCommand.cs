@@ -12,13 +12,11 @@ public class TakeCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine(ColorConsole.Error("Take what?"));
+            io.WriteLine(ColorConsole.Error(GameMessages.Take.NoItem));
             return;
         }
 
-        var item = state.CurrentRoom.Items.FirstOrDefault(i =>
-            i.Id.Equals(command.Noun, StringComparison.OrdinalIgnoreCase) ||
-            i.Name.Contains(command.Noun, StringComparison.OrdinalIgnoreCase));
+        var item = state.FindRoomItem(command.Noun);
 
         if (item is null)
         {
@@ -36,7 +34,7 @@ public class TakeCommand : ICommand
         state.Inventory.Add(item);
 
         if (item.Id == "data_chip")
-            io.WriteLine("Your hand trembles as you pocket the chip. Years of work, dead contacts, all leading to this moment.");
+            io.WriteLine(GameMessages.Take.DataChipPickup);
         else
             io.WriteLine($"You pick up the {ColorConsole.Yellow(item.Name)}.");
     }

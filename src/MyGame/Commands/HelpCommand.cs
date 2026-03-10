@@ -17,9 +17,9 @@ public class HelpCommand : ICommand
 
     public void Execute(ParsedCommand command, GameState state, IInputOutput io)
     {
-        io.WriteLine("\nAvailable commands:");
+        io.WriteLine(GameMessages.Help.Header);
         foreach (var cmd in _registry.AllCommands.OrderBy(c => c.Verb))
             io.WriteLine($"  {cmd.Verb,-12} {cmd.HelpText}");
-        io.WriteLine("\nDirections: north (n), south (s), east (e), west (w), up (u), down (d)");
+        io.WriteLine(GameMessages.Help.Directions);
     }
 }

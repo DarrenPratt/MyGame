@@ -21,7 +21,7 @@ public class GoCommand : ICommand
 
         if (direction is null)
         {
-            io.WriteLine(ColorConsole.Error("Go where? Specify a direction (north, south, east, west, up, down, etc.)."));
+            io.WriteLine(ColorConsole.Error(GameMessages.Go.NoDirection));
             return;
         }
 
@@ -39,7 +39,7 @@ public class GoCommand : ICommand
         {
             var needed = exit.RequiredItemId is not null
                 ? $"You need the {exit.RequiredItemId.Replace('_', ' ')} to proceed."
-                : "The way is locked.";
+                : GameMessages.Go.WayLocked;
             io.WriteLine(ColorConsole.Error($"The way {direction} is blocked. {needed}"));
             return;
         }
@@ -59,8 +59,8 @@ public class GoCommand : ICommand
         {
             state.HasWon = true;
             state.IsRunning = false;
-            io.WriteLine("The server room hums around you. Rows of data towers stretch into the dark.");
-            io.WriteLine("You find the drive. Your hand trembles as you pocket it.");
+            io.WriteLine(GameMessages.Win.ServerRoom1);
+            io.WriteLine(GameMessages.Win.ServerRoom2);
             return;
         }
 

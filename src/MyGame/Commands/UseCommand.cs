@@ -12,13 +12,11 @@ public class UseCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine(ColorConsole.Error("Use what?"));
+            io.WriteLine(ColorConsole.Error(GameMessages.Use.NoItem));
             return;
         }
 
-        var item = state.Inventory.FirstOrDefault(i =>
-            i.Id.Equals(command.Noun, StringComparison.OrdinalIgnoreCase) ||
-            i.Name.Contains(command.Noun, StringComparison.OrdinalIgnoreCase));
+        var item = state.FindInventoryItem(command.Noun);
 
         if (item is null)
         {

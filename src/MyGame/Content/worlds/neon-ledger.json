@@ -99,7 +99,22 @@
       "id": "rooftop",
       "name": "Rooftop Spans — Runner's Route",
       "description": "A network of interconnected rooftops spanning three city blocks. Wind buffets the structure, carrying sounds of traffic and distant sirens. Makeshift bridges and zip-lines connect the buildings, weathered by constant use. From here, you can see all of Night City—neon towers stretching to the horizon, corporate megastructures looming like glass mountains. The freedom of the open air contrasts sharply with the oppression below.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "You've been here before. The rooftops feel different on a return visit—less wonder, more dread. The wind carries new sounds now: drone sweeps, guard sirens from the plaza below. The skyline hasn't changed, but you know what it costs to cross it."
+        },
+        {
+          "requiredFlags": [
+            "keycard_used"
+          ],
+          "requiredInventoryItems": [],
+          "description": "The rooftops felt like escape routes before. Now, with the keycard burning in your pocket, they feel like a prison. Behind you, the corporate tower hums with alarm. Drones are up. The zip-lines to freedom suddenly seem impossibly far away."
+        }
+      ],
       "exits": [
         {
           "direction": "down",
@@ -200,7 +215,22 @@
       "id": "lobby",
       "name": "Corp Lobby",
       "description": "All chrome and cold steel, a brutalist monument to corporate power. The lobby spans three levels, filled with workers in expensive suits and security personnel in tactical gear. Holographic advertisements for neural implants pulse from every surface. A security door to the north leads deeper into the facility. Security cameras track every movement. Elevators hum behind frosted glass.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "Back in the belly of the beast. The lobby hasn't changed—chrome, surveillance, the stench of corporate perfume. But this time you know the exits. This time you move with purpose. The workers barely notice you anymore. You're just another shadow in the machine."
+        },
+        {
+          "requiredFlags": [
+            "keycard_used"
+          ],
+          "requiredInventoryItems": [],
+          "description": "Alarms should be screaming. Instead, the lobby is eerily quiet—workers moving slow, guards talking in hushed comms. Something's wrong deeper in the building. The server room door to the north waits. It's time to finish this."
+        }
+      ],
       "exits": [
         {
           "direction": "south",
@@ -231,7 +261,24 @@
       "id": "corridor",
       "name": "Service Corridor",
       "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A back exit sign glows faintly at the far end.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "The service corridor is a second home now. Familiar pipes, familiar stench of ozone. A maintenance drone passes without acknowledgment—you're part of the system now. The green emergency lights feel less alien, more like camouflage."
+        },
+        {
+          "requiredFlags": [
+            "keycard_used"
+          ],
+          "requiredInventoryItems": [
+            "drive"
+          ],
+          "description": "The drive is burning in your pocket. These passages suddenly feel like the only path to freedom. The back exit sign glows brighter now, like a beacon. Every moment in this corridor is borrowed time."
+        }
+      ],
       "exits": [
         {
           "direction": "east",
@@ -248,7 +295,22 @@
       "id": "server",
       "name": "Server Room — SynthCorp Research Archive",
       "description": "A labyrinthine archive hidden beneath the corporate tower, sealed behind layers of encryption. Servers hum in endless rows, their light panels casting everything in harsh white and blue. Files and data are stored on holographic displays. This is where your target waits—the drive containing research that could bring down SynthCorp's entire neural implant division. The air is cold, precise, sterile. Condensation forms on your breath.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "You've stood in this room before. The servers still hum their endless song, the blue light still cuts sharp shadows. But this time you know exactly what you're looking for. The drive won't hide from you again."
+        },
+        {
+          "requiredFlags": [],
+          "requiredInventoryItems": [
+            "drive"
+          ],
+          "description": "The drive is in your hands. The servers around you suddenly feel like monuments to a dead system—all that processing power, all that cold logic, and it couldn't protect what mattered. Now comes the hard part: getting out alive."
+        }
+      ],
       "exits": [
         {
           "direction": "south",
@@ -267,7 +329,22 @@
       "id": "tunnel",
       "name": "Underground Tunnel Network",
       "description": "You slip down into the undercity—the sprawling network of tunnels that web beneath the city. Glowing cables strung across makeshift shelters cast everything in electric blue. The sound of machinery, voices, and distant music echoes through the passages. The air is thick and warm, smelling of ozone and grease. Runner dens and black-market tech shops cluster here in the shadows. This is where those unwanted by the megacorps have built a parallel civilization.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "The undercity is familiar territory now. Runners nod as you pass—word travels fast down here. You're known. The blue cables feel less like alien tech and more like the veins of a city that actually lives, unlike the sterile corpo towers above."
+        },
+        {
+          "requiredFlags": [
+            "cred_chip_obtained"
+          ],
+          "requiredInventoryItems": [],
+          "description": "You've got what you came for. The cred chip burns like a prize against your skin. The undercity helped you. Now you've got the leverage to walk through SynthCorp's front door—or at least its security checkpoint. The Den's work is done."
+        }
+      ],
       "exits": [
         {
           "direction": "up",
@@ -300,7 +377,22 @@
       "id": "den",
       "name": "Hacker's Den",
       "description": "A sprawling underground hideout carved into the undercity's bones. Jury-rigged servers and salvaged neural jacks line the walls, their lights pulsing in rhythm. The smell of fried circuits mingles with cheap synth-coffee and stim-sticks. Runners, netrunners, and black-market dealers move through the shadows like ghosts. Information trades hands here—gossip, credentials, access codes. The runners call it the Den. Everyone else just calls it home.",
-      "narratorVariants": [],
+      "narratorVariants": [
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "The Den feels like sanctuary now. The servers pulse in familiar rhythm. Faces you recognize nod from the shadows. You've walked these corridors before, and the undercity's underground knows your name. The runners here understand what you're about."
+        },
+        {
+          "requiredFlags": [
+            "cred_chip_obtained"
+          ],
+          "requiredInventoryItems": [],
+          "description": "You've got the chip. The Den gave you what you needed. The dealers here don't smile, but their nods carry respect—you came, you found, you're ready for the big game. The upper city won't know what hit it."
+        }
+      ],
       "exits": [
         {
           "direction": "north",

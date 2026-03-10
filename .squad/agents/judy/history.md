@@ -75,6 +75,85 @@
 - **Backward compatibility preserved**: All existing tests construct `GameEngine` without a factory (`stateFactory = null` default). 199 tests pass unchanged.
 - **`_state` is no longer `readonly`**: Required so the retry loop can replace it with a fresh instance from the factory.
 
+### Session 9 — Fix Save/Load State Corruption (Issue #35)
+
+- **Three fields were silently dropped on save/load**: `DroneThreatLevel`, `DroneThreatThreshold`, and per-room exit `IsLocked` states were not included in the `SaveData` record.
+- **`DroneThreatThreshold` changed from `init` to `set`**: Required to allow `LoadCommand` to restore it on an existing `GameState` object. No tests relied on it being immutable.
+- **`SaveCommand` now captures all exit states**: Builds a `Dictionary<string, Dictionary<string, bool>>` of `roomId → direction → isLocked` for all rooms that have exits.
+- **`LoadCommand` restores with backward-compat defaults**: `DroneThreatLevel` defaults to 0, `DroneThreatThreshold` keeps the world default if saved value is 0, `ExitLockStates` is null-safe — old saves load without errors.
+- **River's 6 pre-written tests all passed immediately** after the fix. Total tests: 211.
+- **PR**: #60 on DarrenPratt/MyGame
+
+### Session 10 — Fix viktor_met Narrator Flag (Issue #46)
+
+- **Root cause found immediately**: `GameState.Flags` (`HashSet<string>`) already existed; `NarratorEngine.GetVariant()` already checked it. TalkCommand simply never set any flag after a dialogue interaction.
+- **Narrator variant system**: `NarratorVariant.RequiredFlags` is a list of flag strings. `NarratorEngine` selects the most-specific matching variant (highest `RequiredFlags.Count + RequiredInventoryItems.Count` among all whose conditions are fully satisfied). Falls back to `Room.Description` if no variant matches.
+- **Rooms using `viktor_met`**: `bar` has a variant keyed on `viktor_met` that changes narration after meeting Viktor. No other room uses this flag.
+- **Fix**: One line added to `TalkCommand.Execute()` — `state.Flags.Add($"{npc.Id}_met")` — placed immediately after confirming the NPC has dialogue, before the conversation loop. Generic: sets `viktor_met`, `mox_met`, `guard_met` for any NPC with dialogue, no special-casing.
+- **ExamineCommandTests.cs**: River had already written 16 new ExamineCommand tests locally; they were untracked and got picked up in the commit. 227 tests pass.
+- **PR**: #61 on DarrenPratt/MyGame
+
+### Session 11 — Scribe Orchestration (2026-03-10T19:15:00Z)
+
+- **Orchestration logs created**: Recorded Judy's viktor_met flag fix and River's ExamineCommand test coverage
+- **Session log written**: Comprehensive summary of parallel Issue #46 and Issue #38 work (227 tests passing)
+- **Decisions merged**: All four inbox decision files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md; inbox files deleted
+- **Agent histories updated**: Judy and River histories append with session 11 summaries
+
+### Session 12 — Issue #32: Delete Parser.cs (unblock Judy)
+
+**River rewrote ParserTests.cs** to call `CommandParser.Parse()` directly, then deleted `Parser.cs`.
+
+**What Parser.cs was:** A 6-line instance-method wrapper — `public ParsedCommand Parse(string input) => CommandParser.Parse(input);`. No added logic; pure pass-through.
+
+**What replaced it in tests:** `CommandParser.Parse(input)` called as a static method directly. All 6 tests kept identical assertions; only `new Parser()` removed.
+
+**How CommandParser works:** Static class in `MyGame.Engine`. `Parse(string input)` trims/lowercases, splits on first space for Verb + rest, then scans rest for `" on "` to populate `Target`. Returns `ParsedCommand(Verb, Noun?, Target?)` record.
+
+All 227 tests pass. `Parser.cs` is deleted. Decision merged into decisions.md.
+
+### Session 12 — Extract Hardcoded Strings to GameMessages (Issue #34)
+
+- **`GameMessages.cs` created** at `src/MyGame/Engine/GameMessages.cs`: one static class, twelve nested static classes, all `public const string` members.
+- **Strings extracted from `GameEngine.cs`**: default title/subtitle/introText, `"\n> "` prompt, `"\nTry again? (yes/no) "` retry prompt, all three drone warning messages, win/lose default narrative blocks (consolidated from separate `_io.WriteLine` calls into single const strings split via `SplitLines`), and win/lose/quit banners.
+- **Strings extracted from command files**: `GoCommand` (no-direction error, "The way is locked.", server-room win lines), `TakeCommand` (take-what error, data_chip flavour line), `UseCommand` (use-what error), `LookCommand` ("Items here:", "You see here:", "Exits:"), `HelpCommand` (header, directions footer), `QuitCommand` ("Jacking out…"), `TalkCommand` ("Talk to whom?", end-conversation, goodbye, dialogue prompt `"> "`), `DropCommand` (drop-what), `ExamineCommand` (examine-what), `InventoryCommand` (empty/header).
+- **Grouping**: `Defaults`, `Prompts`, `Drone`, `Win`, `Lose`, `Quit`, `Go`, `Take`, `Use`, `Look`, `Help`, `Drop`, `Examine`, `Inventory`, `Talk`.
+- **All 227 tests pass** after the refactor — pure behaviour-preserving change.
+- **Pattern noted**: multi-line prose previously written as multiple consecutive `_io.WriteLine` calls — consolidated into single const strings using `\n`, then split via the existing `SplitLines` helper. Consistent with how JSON world win/lose messages are already handled.
+
+### Session 12 — FindItem Deduplication (Issue #33)
+
+- **`GameStateExtensions.cs` created in `MyGame.Engine`**: Three public extension methods on `GameState` — `FindItem(noun)` (room then inventory), `FindRoomItem(noun)` (room only), `FindInventoryItem(noun)` (inventory only). All share a private `MatchesNoun` predicate (exact ID or partial name, case-insensitive).
+- **Four commands refactored**: `TakeCommand` → `FindRoomItem`, `DropCommand` → `FindInventoryItem`, `ExamineCommand` → `FindItem` (private static helper removed), `UseCommand` → `FindInventoryItem`. Search semantics preserved exactly.
+- **All 227 tests pass** unchanged.
+- **Git commit prepared**: .squad/ changes staged and committed with CoAuthor trailer
+
+### Session 14 — Issue #32 Parser.cs Investigation
+
+- **Parser.cs NOT deleted**: Investigation found 6 callers in `src/MyGame.Tests/ParserTests.cs` — River's tests use `new Parser()` as the public API surface for `ParsedCommand.Target` field coverage ("use X on Y" syntax).
+- **Parser.cs IS a dead wrapper in production**: `GameEngine.cs` calls `CommandParser.Parse()` directly; `Parser.cs` just delegates to the same. But the test contract depends on it.
+- **Decision**: Per task instructions, did not delete — reported finding instead. Issue #32 cannot be resolved without migrating ParserTests.cs to use `CommandParser` directly first.
+
+### Session 14 — Remove savegame.json from Git Tracking (Issue #41)
+
+- **`src/MyGame/savegame.json` removed from tracking**: Used `git rm --cached` to untrack the runtime save file without deleting it from disk. File still exists locally for game use.
+- **`.gitignore` updated**: Added `savegame.json` under a new `# Runtime artifacts` section. Entry is top-level (no `**/` prefix) because `savegame.json` is written to the working directory and not namespaced.
+- **No other save-related artifacts found**: No `*.save` or `*.sav` files present. No additional entries needed.
+- **Committed on current branch** (`squad/46-viktor-met-flag`) with no new branch created.
+
+### Session 15 — Issue #31: Remove Duplicate FindItem from LookCommand
+
+- **Change**: Replaced the call to `LookCommand`'s private `FindItem(noun, state)` with `state.FindItem(noun)` (the shared `GameStateExtensions` extension method), then deleted the private method (8 lines removed).
+- **`using MyGame.Models;` retained**: `Room` is still referenced by the `DescribeRoom` overloads — the import was not unused.
+- **Pattern**: When `GameStateExtensions.FindItem()` was introduced (Issue #33), `ExamineCommand` was migrated but `LookCommand` was missed. Whenever a shared utility is added to replace duplicates, grep all command files for the old pattern to ensure full coverage in the same PR.
+- **PR**: #62 on DarrenPratt/MyGame. 227 tests pass unchanged.
+
+### Session 13 — Parallel Refactoring Work (2026-03-10T19:25:00Z)
+
+- **Issue #34 — GameMessages String Extraction**: Created `GameMessages.cs` (15 nested static classes, 50+ const strings) centralizing all player-facing narrative from `GameEngine.cs` and 10 command files. Consolidation pattern applied: multi-line prose from sequential `WriteLine` calls → single const with `\n` → split via `SplitLines`. Pure refactor, 227 tests pass.
+- **Issue #33 — FindItem Extension Methods**: Completed same session — `GameStateExtensions.cs` with three scoped methods sharing one `MatchesNoun` predicate. Eliminates duplication across `TakeCommand`, `DropCommand`, `ExamineCommand`, `UseCommand`. 227 tests pass.
+- **Rogue parallel work (Issue #36)**: Added 19 narrator variants across 10 rooms (return-visit variants on all, progression variants for keycard_used/cred_chip_obtained on 4 rooms, item-possession variants on 2 rooms). World now dynamic and reactive to player state.
+- **All work on branch squad/46-viktor-met-flag**: Three agents working in parallel, orchestration logs and session summary documented in .squad/. 227 tests passing, ready for merge.
 ## Team Updates
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
