@@ -514,3 +514,75 @@ All major decisions documented and deduped. Team achieved:
 - ✅ NPC-met narrator flags functional
 - ✅ ExamineCommand fully tested
 - ⚠️ 12 improvement issues identified for v0.3 and beyond
+
+---
+
+## Extract DroneThreatSystem — Johnny (Lead & Architect)
+
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Scope:** Issue #44 — Extract drone threat logic into dedicated class
+
+### Context
+
+Drone threat logic was inline in `GameEngine.RunSession()`: a 15-line block that incremented `_state.DroneThreatLevel`, emitted three warning messages by level, and set `HasLost`/`IsRunning` when the threshold was reached. This mixed game-rule logic with the engine's I/O loop.
+
+### Decision
+
+Extract all drone threat behaviour into `src/MyGame/Engine/DroneThreatSystem.cs`.
+
+**Class design:**
+- `IsHighRiskRoom()` — checks HighRiskRoomIds
+- `Increment()` — increments level, returns warning or null; sets HasLost/IsRunning at threshold
+- `Reset()` — resets DroneThreatLevel = 0
+
+**Key choices:**
+- State as dependency: DroneThreatLevel and DroneThreatThreshold remain on GameState for save/load compatibility
+- Increment() returns warning string; caller controls I/O delivery
+- Death side-effects owned by system
+- _droneSystem re-created on factory restart
+
+**Consequences:**
+- GameEngine's 15-line drone block replaced by 4 lines
+- Unused prevRoomId local variable removed
+- All 227 tests pass without modification
+
+---
+
+## Parser.cs Retained — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Blocked  
+**Scope:** Issue #32
+
+### Finding
+
+`Parser.cs` appears dead in production (wrapper around `CommandParser.Parse()`). But `ParserTests.cs` contains 6 tests instantiating `new Parser()`. River wrote these to cover `ParsedCommand.Target` field parsing.
+
+### Recommendation
+
+Migrate `ParserTests.cs` to call `CommandParser.Parse()` directly first, then delete `Parser.cs`. Requires River coordination.
+
+---
+
+## Savegame.json Removed from Tracking — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Scope:** Issue #41
+
+### Decision
+
+- Removed `src/MyGame/savegame.json` from git tracking via `git rm --cached`
+- File left on disk intact
+- Added `savegame.json` to `.gitignore` under `# Runtime artifacts` section
+- Flat name (no glob) because file is written to working directory
+
+### Consequences
+
+- `savegame.json` will never appear in `git status` during game play
+- Existing save file on disk unaffected
+
+---
+
+**Last Updated:** 2026-03-10T19:35:00Z

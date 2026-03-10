@@ -20,4 +20,10 @@
 
 - **2026-03-09 — Rogue completed content design:** 9-room cyberpunk world with 8 items and rich narrative. Used your architecture as the framework and added atmospheric flavor text.
 - **2026-03-09 — River completed test suite:** 114 comprehensive xUnit tests written against ARCHITECTURE.md spec. Tests cover all commands, world integrity, state management, and integration flows. Your IInputOutput abstraction proved essential for testability.
+
+### Session 15 — DroneThreatSystem Extraction & ARCHITECTURE.md Refresh (2026-03-10T19:35:00Z)
+
+- **Extract DroneThreatSystem (Issue #44):** Extracted 15-line drone threat inline block from `GameEngine.RunSession()` into dedicated `src/MyGame/Engine/DroneThreatSystem.cs`. Class holds `GameState` reference; exposes `IsHighRiskRoom()` (checks `HighRiskRoomIds`), `Increment()` (increments level, returns warning string or null, sets `HasLost`/`IsRunning` at threshold), and `Reset()` (sets level to 0). `DroneThreatLevel` and `DroneThreatThreshold` remain on `GameState` for save/load compatibility. `GameEngine._droneSystem` field re-created on factory restart. Engine delegation shrunk to 4 lines. Unused `prevRoomId` local removed. All 227 tests pass.
+
+- **ARCHITECTURE.md Comprehensive Refresh (Issue #51):** Rewrote ARCHITECTURE.md (523 lines) to reflect current codebase state. Now covers: all 14 implemented commands; engine systems (NarratorEngine, GameMessages, ColorConsole, GameStateExtensions, DroneThreatSystem); game mechanics (threat system, NPC/dialogue/variants, flag-based narration, save/load format with threat levels and exit locks); restart-on-death via stateFactory; 227+ test coverage. Removed stale content (old world map, superseded command signatures). Document now serves as authoritative reference for current architecture. Committed on squad/46-viktor-met-flag.
 - **2026-03-09 — Judy completed implementation:** Full C# game implementation matching your architecture exactly. All 114 tests passing. Your ICommand pattern and CommandRegistry enabled clean, extensible command dispatch. Game title: "Neon Ledger".
