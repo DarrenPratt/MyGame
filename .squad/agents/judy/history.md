@@ -186,6 +186,7 @@ All 227 tests pass. `Parser.cs` is deleted. Decision merged into decisions.md.
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
 - **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
+- **2026-03-10 — Johnny completed codebase review:** Filed 12 improvement issues (4 for Judy, 2 for Rogue, 2 for River, 4 for Johnny). P1 save/load corruption identified. All findings documented in decisions.md.
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
 - **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
