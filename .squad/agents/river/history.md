@@ -226,3 +226,15 @@ All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/in
 - **2026-03-10 — Judy fixed viktor_met flag:**Generic flag-setting in TalkCommand now sets `{npc.Id}_met` for all NPCs. 227 tests passing (including your 16 new ExamineCommand tests unexpectedly committed).
 - **2026-03-10 — River completed ExamineCommand test coverage:** 16 comprehensive tests covering all behaviors, priorities, and boundaries. Dedicated test file confirms ExamineCommand is standalone command (not noun on LookCommand).
 - **2026-03-10 — River validated save/load state corruption fix:** 6 new SaveLoadTests validate Judy's persistence of DroneThreatLevel, DroneThreatThreshold, and exit lock states.
+
+### Session 2026-03-10 — Issue #32: Delete Parser.cs (unblock Judy)
+
+**Rewrote ParserTests.cs** to call `CommandParser.Parse()` directly, then deleted `Parser.cs`.
+
+**What Parser.cs was:** A 6-line instance-method wrapper — `public ParsedCommand Parse(string input) => CommandParser.Parse(input);`. No added logic; pure pass-through.
+
+**What replaced it in tests:** `CommandParser.Parse(input)` called as a static method directly. All 6 tests kept identical assertions; only `new Parser()` removed.
+
+**How CommandParser works:** Static class in `MyGame.Engine`. `Parse(string input)` trims/lowercases, splits on first space for Verb + rest, then scans rest for `" on "` to populate `Target`. Returns `ParsedCommand(Verb, Noun?, Target?)` record.
+
+All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/inbox/river-parser-cleanup.md`.
