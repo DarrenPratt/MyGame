@@ -412,10 +412,10 @@
     {
       "id": "flyer",
       "name": "Crumpled Flyer",
-      "description": "A crumpled flyer wedged under a fire escape. The logo reads 'THE BYTE BAR — one block east.' Someone's scrawled underneath: 'Ask for Viktor. He knows the score.' Useful for orientation.",
+      "description": "A crumpled flyer wedged under a fire escape. The logo reads 'THE BYTE BAR — one block east.' Someone's scrawled underneath: 'Ask for Viktor. He knows the score.' The paper's worn, but the message is clear—even the undercity has its rumor mill.",
       "canPickUp": true,
       "useTargetId": null,
-      "useMessage": null
+      "useMessage": "You glance at the flyer again. In a city drowning in propaganda—corporate lies plastered on every corner—even a hand-scrawled tip sheet feels like contraband. Information trades fast down here. Faster than bullets."
     },
     {
       "id": "terminal",
@@ -444,10 +444,10 @@
     {
       "id": "repair_kit",
       "name": "Black-Market Repair Kit",
-      "description": "A weathered case containing tools and spare parts for fixing damaged tech. Found in the undercity, it's useful for repairing equipment or bypassing simple security locks.",
+      "description": "A weathered case containing tools and spare parts—salvage from a dozen dead runs. The undercity thrives on repurposed tech and jury-rigged repairs. This kit represents hours of work by someone trying to survive the corpo dystopia. It's a relic of the underground economy.",
       "canPickUp": true,
       "useTargetId": null,
-      "useMessage": null
+      "useMessage": "You turn the kit over in your hands. Whatever this was meant to fix, it tells a story—scavenged parts, crude welds, ingenuity born from desperation. Down here, broken things become tools. Tools become leverage. Leverage becomes freedom."
     },
     {
       "id": "cred_chip",
