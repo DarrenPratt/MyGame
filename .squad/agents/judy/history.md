@@ -116,3 +116,24 @@
 - **All 227 tests pass** unchanged.
 - **Git commit prepared**: .squad/ changes staged and committed with CoAuthor trailer
 
+### Session 14 — Issue #32 Parser.cs Investigation
+
+- **Parser.cs NOT deleted**: Investigation found 6 callers in `src/MyGame.Tests/ParserTests.cs` — River's tests use `new Parser()` as the public API surface for `ParsedCommand.Target` field coverage ("use X on Y" syntax).
+- **Parser.cs IS a dead wrapper in production**: `GameEngine.cs` calls `CommandParser.Parse()` directly; `Parser.cs` just delegates to the same. But the test contract depends on it.
+- **Decision**: Per task instructions, did not delete — reported finding instead. Issue #32 cannot be resolved without migrating ParserTests.cs to use `CommandParser` directly first.
+
+### Session 14 — Remove savegame.json from Git Tracking (Issue #41)
+
+- **`src/MyGame/savegame.json` removed from tracking**: Used `git rm --cached` to untrack the runtime save file without deleting it from disk. File still exists locally for game use.
+- **`.gitignore` updated**: Added `savegame.json` under a new `# Runtime artifacts` section. Entry is top-level (no `**/` prefix) because `savegame.json` is written to the working directory and not namespaced.
+- **No other save-related artifacts found**: No `*.save` or `*.sav` files present. No additional entries needed.
+- **Committed on current branch** (`squad/46-viktor-met-flag`) with no new branch created.
+
+### Session 13 — Parallel Refactoring Work (2026-03-10T19:25:00Z)
+
+- **Issue #34 — GameMessages String Extraction**: Created `GameMessages.cs` (15 nested static classes, 50+ const strings) centralizing all player-facing narrative from `GameEngine.cs` and 10 command files. Consolidation pattern applied: multi-line prose from sequential `WriteLine` calls → single const with `\n` → split via `SplitLines`. Pure refactor, 227 tests pass.
+- **Issue #33 — FindItem Extension Methods**: Completed same session — `GameStateExtensions.cs` with three scoped methods sharing one `MatchesNoun` predicate. Eliminates duplication across `TakeCommand`, `DropCommand`, `ExamineCommand`, `UseCommand`. 227 tests pass.
+- **Rogue parallel work (Issue #36)**: Added 19 narrator variants across 10 rooms (return-visit variants on all, progression variants for keycard_used/cred_chip_obtained on 4 rooms, item-possession variants on 2 rooms). World now dynamic and reactive to player state.
+- **All work on branch squad/46-viktor-met-flag**: Three agents working in parallel, orchestration logs and session summary documented in .squad/. 227 tests passing, ready for merge.
+
+

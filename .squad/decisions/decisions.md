@@ -269,6 +269,114 @@
 - **Finding:** Parser.cs delegates entirely to CommandParser with no added value.
 - **Action:** Judy to remove class and update imports.
 
+---
+
+## Code Organization Decisions — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Approved  
+**Scope:** String centralization and item lookup deduplication
+
+### 1. Static const class for narrative strings (Issue #34)
+
+**Context:** `GameEngine.cs` and ten command files contained hardcoded player-facing string literals scattered throughout—death messages, win/lose banners, drone warnings, command errors, and UI prompts. Difficult to find, update consistently, or reference from tests.
+
+**Decision:** Extract all player-facing narrative and UI strings into a single static class `GameMessages` (`src/MyGame/Engine/GameMessages.cs`), using `public const string` members grouped by context in nested static classes.
+
+**Structure:**
+- `GameMessages.Defaults` — title, subtitle, intro text
+- `GameMessages.Prompts` — command input prompt, dialogue prompt, try-again prompt
+- `GameMessages.Drone` — warning messages at threat levels 1–3
+- `GameMessages.Win` — server-room entry lines, default win narrative, win banner
+- `GameMessages.Lose` — default lose narrative, lose banner
+- `GameMessages.Quit` — quit message, quit banner
+- `GameMessages.Go`, `Take`, `Use`, `Look`, `Help`, `Drop`, `Examine`, `Inventory`, `Talk` — command-specific strings
+
+**Rationale:**
+- Single place to find and update any player-facing string—no grep needed
+- Simple: one file, const strings, no localization framework needed
+- Pure refactor—zero behaviour change, all 227 tests pass unchanged
+- Consolidation pattern: multi-line prose previously written as sequential `_io.WriteLine` calls is now a single const with `\n` delimiters, split via existing `SplitLines` helper. Matches existing JSON world message pattern.
+
+**Impact:**
+- Maintainability improved: all UI text centralized
+- Consistency guaranteed: shared messaging across game engine and all commands
+- Testability unchanged: ANSI codes in output remain transparent to tests
+
+### 2. GameState Extension Methods for Item Lookup (Issue #33)
+
+**Context:** Four command classes (`TakeCommand`, `DropCommand`, `ExamineCommand`, `UseCommand`) each implemented identical item search logic (find by exact ID or partial name match, case-insensitive). Duplicated logic created maintenance risk.
+
+**Decision:** Add `GameStateExtensions.cs` in `MyGame.Engine` providing three extension methods on `GameState` for item lookup:
+```csharp
+public static Item? FindItem(this GameState state, string noun)
+public static Item? FindRoomItem(this GameState state, string noun)
+public static Item? FindInventoryItem(this GameState state, string noun)
+```
+
+All three use a shared private predicate: exact ID match (case-insensitive) OR partial name contains (case-insensitive).
+
+**Rationale:**
+- Single source of truth: The same predicate logic was inlined in four command classes. Any future change to match semantics (e.g., adding aliases) now requires only one edit.
+- Extension method over static class: `state.FindItem(noun)` reads naturally at call sites, consistent with idiomatic C# and existing GameState API.
+- Three scopes preserve existing semantics: `TakeCommand` only searches the room (can't take what you're holding); `DropCommand` and `UseCommand` only search inventory; `ExamineCommand` searches both. Separate methods make scope intent explicit rather than hiding it in flags parameter.
+
+**Impact:**
+- Code clarity: Commands now express intent explicitly via method name (FindRoomItem vs. FindInventoryItem)
+- Maintainability: Predicate changes propagate instantly to all callers
+- Extensibility: Adding new search semantics (aliases, fuzzy matching) requires only changes to the predicate
+
+---
+
+## Narrator Variant Coverage — Rogue (Content Designer)
+
+**Date:** 2026-03-10  
+**Status:** Approved  
+**Scope:** Dynamic room descriptions for all 10 rooms
+
+### Narrator Variants Implementation (Issue #36)
+
+**Context:** Most rooms had only static descriptions. No dynamic narration based on player progress, location familiarity, or mission state. World felt static despite rich underlying game mechanics (flags, item state, visit counts).
+
+**Decision:** All 10 rooms now include dynamic narrator variants triggered by game state flags. Static descriptions have been replaced with context-aware alternatives reflecting player progress, location familiarity, and mission status.
+
+**Variant Categories & Coverage:**
+
+1. **Return-Visit Variants (visit_count_gt_1)** — All 10 rooms
+   - When player revisits, description shifts from discovery/wonder to familiarity and tactical awareness
+   - Example: Rooftop base description emphasizes visual scale; return visit emphasizes danger ("green emergency lights feel less alien, more like camouflage")
+
+2. **Progression-Based Variants**
+   - `keycard_used`: Rooftop, lobby, corridor, server (escalating corporate alarm, urgency, danger)
+   - `cred_chip_obtained`: Tunnel, den (leverage gained, reputation earned in undercity)
+
+3. **Item-Possession Variants**
+   - `drive in inventory`: Server, corridor (emotional weight of success, extraction danger; corridor variant combines keycard_used + drive-in-inventory for final-escape context)
+
+4. **Existing Variants** (Maintained)
+   - `alley`: keycard_used, drive in inventory
+   - `bar`: viktor_met
+   - `plaza`: cred_chip_obtained
+   - `checkpoint`: guard_distracted, guard_bribed
+
+**Narrative Consistency:**
+- All variants maintain cyberpunk voice (gritty, neon-soaked, emotional, 2–4 sentences)
+- Preserve base description themes while adding emotional/tactical layers
+- Use present-tense perspective consistent with existing content
+- Avoid redundancy (no duplicate flags within a room)
+
+**Implementation Notes:**
+- Flag choices leverage existing game state: `visit_count_gt_1`, `keycard_used`, `cred_chip_obtained`, `viktor_met`
+- All variants follow existing JSON schema with `requiredFlags` and `requiredInventoryItems`
+- No engine changes required; variants are additive entries in `narratorVariants` array
+- Variants selected by NarratorEngine at runtime based on most-specific match (highest combined flag + inventory match count)
+
+**Impact:**
+- Player Experience: World feels dynamic and reactive—rooms acknowledge progress and emotional journey
+- Replayability: Variants provide different perspectives on familiar spaces across playthroughs
+- Story Pacing: Return visits and progression variants reinforce narrative beats (escalation → success → extraction)
+- Content Density: 19 new variant entries distributed across 6 rooms, 10 rooms with complete variant coverage
+
 **savegame.json Committed to Repo (#41)**
 - **Finding:** Runtime artifact accidentally committed; creates noise in diffs.
 - **Action:** Judy to remove file and add to .gitignore.
