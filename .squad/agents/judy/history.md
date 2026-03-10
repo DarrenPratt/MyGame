@@ -173,8 +173,16 @@ All 227 tests pass. `Parser.cs` is deleted. Decision merged into decisions.md.
 - **PR**: #64 on DarrenPratt/MyGame. All 227 tests pass.
 - **Pattern**: Any item pick-up flavor text belongs in the JSON `takeMessage` field, not in command code. Content designers can now customize per-item without touching C#.
 
-- **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
-- **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
+### Session 17 — Issue #39: Verify Parser.cs Removal (Investigation Complete)
+
+- **Investigation finding**: Parser.cs is not present in the working directory. Confirmed completely removed in Session 12.
+- **ParserTests.cs verified**: All 6 tests call `CommandParser.Parse()` directly (lines 15, 25, 35, 45, 55, 65) — no dependency on Parser wrapper class.
+- **GameEngine.cs verified**: Single reference to `CommandParser.Parse()` via grep. No usage of Parser class.
+- **No other references found**: grep across entire src/ found only ParserTests.cs and CommandParser.cs mentioning "Parser" — all references are to the static CommandParser class, not an instance wrapper.
+- **Test suite clean**: All 227 tests pass. No broken references.
+- **Conclusion**: Issue #39 was already resolved in Session 12. Parser.cs removal is complete and verified.
+
+## Team Updates
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
 - **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
@@ -182,3 +190,22 @@ All 227 tests pass. `Parser.cs` is deleted. Decision merged into decisions.md.
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
 - **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
 
+- **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
+- **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
+- **2026-03-10 — Johnny completed codebase review:** Filed 12 improvement issues (4 for Judy, 2 for Rogue, 2 for River, 4 for Johnny). P1 save/load corruption identified. All findings documented in decisions.md.
+
+
+### Session 17 — Orchestration & Decisions Merge (2026-03-10T20:14:39Z)
+
+- **Judy (agent-0) — Issue #41 (PR #63)**: Updated .gitignore with save file patterns (savegame.json and *.save.json). Build clean. Decision documented.
+- **Judy (agent-1) — Issue #42 (PR #64)**: Added TakeMessage field to Item model, removed hardcoded data_chip check from TakeCommand, updated 
+eon-ledger.json, removed dead DataChipPickup constant. All 227 tests pass. Decision documented.
+- **Coordinator**: Closed #48 as duplicate of #51.
+- **Ralph**: Activated by Jynx_Protocol to work through Johnny's issue queue. Round 1 session log created.
+- **Orchestration tasks completed**: 
+  - Orchestration logs written for Judy #41 and #42
+  - Session log written for Ralph round 1
+  - Inbox decisions merged into decisions.md with deduplication
+  - Inbox files deleted
+  - Agent histories updated with team context
+  - Git staging prepared for .squad/ changes
