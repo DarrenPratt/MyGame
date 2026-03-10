@@ -398,9 +398,7 @@
           "description": null
         }
       ],
-      "itemIds": [
-        "repair_kit"
-      ],
+      "itemIds": [],
       "npcIds": []
     },
     {
@@ -477,8 +475,8 @@
       "name": "Black-Market Repair Kit",
       "description": "A weathered case containing tools and spare parts—salvage from a dozen dead runs. The undercity thrives on repurposed tech and jury-rigged repairs. This kit represents hours of work by someone trying to survive the corpo dystopia. It's a relic of the underground economy.",
       "canPickUp": true,
-      "useTargetId": null,
-      "useMessage": "You turn the kit over in your hands. Whatever this was meant to fix, it tells a story—scavenged parts, crude welds, ingenuity born from desperation. Down here, broken things become tools. Tools become leverage. Leverage becomes freedom."
+      "useTargetId": "security_panel",
+      "useMessage": "You approach the broken security panel and open the kit. Your hands move with practiced precision—installing circuit boards, rewiring junction points, splicing cables with a jury-rigged finesse. The panel flickers, then glows. A soft beep signals success. Whatever secrets this system was guarding, you just bought yourself a moment of control in the machine."
     },
     {
       "id": "cred_chip",
@@ -487,6 +485,14 @@
       "canPickUp": true,
       "useTargetId": "north",
       "useMessage": "You slide the cred chip across the desk. The guard's eyes light up—this is enough to make him very cooperative. The locked door to the north slides open silently."
+    },
+    {
+      "id": "security_panel",
+      "name": "Broken Security Panel",
+      "description": "A wall-mounted security panel, its screen cracked and dark. Exposed circuitry dangles from the open casing, and several components are clearly burned out. This system once controlled access and monitoring in the corridor, but it's been dead for months. Someone with the right tools and knowledge could potentially restore it.",
+      "canPickUp": false,
+      "useTargetId": null,
+      "useMessage": null
     }
   ],
   "npcs": [
