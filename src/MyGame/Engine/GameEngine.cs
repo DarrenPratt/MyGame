@@ -41,7 +41,7 @@ public class GameEngine
 
             if (_state.HasLost && _stateFactory is not null)
             {
-                _io.Write(ColorConsole.Yellow("\nTry again? (yes/no) "));
+                _io.Write(ColorConsole.Yellow(GameMessages.Prompts.TryAgain));
                 var answer = _io.ReadLine();
                 if (answer is not null && answer.StartsWith("y", StringComparison.OrdinalIgnoreCase))
                 {
@@ -56,12 +56,9 @@ public class GameEngine
 
     private void RunSession()
     {
-        var title = _world?.Title ?? "N E O N   L E D G E R";
-        var subtitle = _world?.Subtitle ?? "A Cyberpunk Text Adventure";
-        var introText = _world?.IntroText
-            ?? "You've been hired to infiltrate SynthCorp's data vaults and retrieve stolen research.\n" +
-               "Your fixer's last message: \"Package in the corp system. Get in, get the drive, get out.\"\n" +
-               "You start in the back alley with nothing but your wits and a job to do.";
+        var title = _world?.Title ?? GameMessages.Defaults.Title;
+        var subtitle = _world?.Subtitle ?? GameMessages.Defaults.Subtitle;
+        var introText = _world?.IntroText ?? GameMessages.Defaults.IntroText;
 
         var contentWidth = Math.Max(title.Length, subtitle.Length);
         var topBorder = "╔" + new string('═', contentWidth + 2) + "╗";
@@ -81,7 +78,7 @@ public class GameEngine
 
         while (_state.IsRunning)
         {
-            _io.Write(ColorConsole.Prompt("\n> "));
+            _io.Write(ColorConsole.Prompt(GameMessages.Prompts.CommandInput));
             var input = _io.ReadLine();
             if (input is null)
                 break;
@@ -98,11 +95,11 @@ public class GameEngine
             {
                 _state.DroneThreatLevel++;
                 if (_state.DroneThreatLevel == 1)
-                    _io.WriteLine(ColorConsole.Error("A drone sweeps overhead — its scanner lights paint the street."));
+                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning1));
                 else if (_state.DroneThreatLevel == 2)
-                    _io.WriteLine(ColorConsole.Error("Drone targeting systems are locking on. You need to move. Now."));
+                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning2));
                 else if (_state.DroneThreatLevel == 3)
-                    _io.WriteLine(ColorConsole.Error("CRITICAL: Drone lock acquired. Leave this zone immediately."));
+                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning3));
                 else if (_state.DroneThreatLevel >= _state.DroneThreatThreshold)
                 {
                     _state.HasLost = true;
@@ -114,42 +111,29 @@ public class GameEngine
         _io.WriteLine("");
         if (_state.HasWon)
         {
-            if (!string.IsNullOrWhiteSpace(_world?.WinMessage))
-            {
-                foreach (var line in SplitLines(_world.WinMessage))
-                    _io.WriteLine(line);
-            }
-            else
-            {
-                _io.WriteLine("You've done it. The SynthCorp data drive is in your hands—real, tangible proof");
-                _io.WriteLine("of what they've been hiding. As you slip out through the service corridor, corporate");
-                _io.WriteLine("security drones sweep the upper levels. They haven't spotted you. Not yet.");
-                _io.WriteLine("In your pocket, the drive pulses with cold data. You smile—this changes everything.");
-            }
+            var winText = !string.IsNullOrWhiteSpace(_world?.WinMessage)
+                ? _world!.WinMessage
+                : GameMessages.Win.DefaultMessage;
+            foreach (var line in SplitLines(winText))
+                _io.WriteLine(line);
 
             _io.WriteLine("");
-            _io.WriteLine(ColorConsole.Magenta("*** YOU WIN. The neon city is yours. ***"));
+            _io.WriteLine(ColorConsole.Magenta(GameMessages.Win.Banner));
         }
         else if (_state.HasLost)
         {
-            if (!string.IsNullOrWhiteSpace(_world?.LoseMessage))
-            {
-                foreach (var line in SplitLines(_world.LoseMessage))
-                    _io.WriteLine(line);
-            }
-            else
-            {
-                _io.WriteLine("Red warning lights flood the street. SynthCorp security drones converge on your position,");
-                _io.WriteLine("their scanner locks painting you in deadly light. Your wrist terminal screams alerts.");
-                _io.WriteLine("You've lost the game—and possibly much worse. The last thing you see is a drone's");
-                _io.WriteLine("targeting reticle zeroing in. SynthCorp doesn't take data theft lightly.");
-            }
+            var loseText = !string.IsNullOrWhiteSpace(_world?.LoseMessage)
+                ? _world!.LoseMessage
+                : GameMessages.Lose.DefaultMessage;
+            foreach (var line in SplitLines(loseText))
+                _io.WriteLine(line);
+
             _io.WriteLine("");
-            _io.WriteLine(ColorConsole.Error("*** CAPTURED. SynthCorp wins this round. ***"));
+            _io.WriteLine(ColorConsole.Error(GameMessages.Lose.Banner));
         }
         else
         {
-            _io.WriteLine(ColorConsole.DarkGray("*** JACKED OUT. See you in the sprawl. ***"));
+            _io.WriteLine(ColorConsole.DarkGray(GameMessages.Quit.Banner));
         }
         _io.WriteLine("");
     }

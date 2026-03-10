@@ -10,7 +10,7 @@ public class QuitCommand : ICommand
 
     public void Execute(ParsedCommand command, GameState state, IInputOutput io)
     {
-        io.WriteLine("Jacking out of the sprawl...");
+        io.WriteLine(GameMessages.Quit.Message);
         state.IsRunning = false;
     }
 }

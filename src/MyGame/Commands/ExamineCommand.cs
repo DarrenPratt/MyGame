@@ -12,7 +12,7 @@ public class ExamineCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine(ColorConsole.Error("Examine what?"));
+            io.WriteLine(ColorConsole.Error(GameMessages.Examine.NoItem));
             return;
         }
 

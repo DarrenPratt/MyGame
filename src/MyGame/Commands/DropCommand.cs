@@ -11,7 +11,7 @@ public class DropCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine(ColorConsole.Error("Drop what?"));
+            io.WriteLine(ColorConsole.Error(GameMessages.Drop.NoItem));
             return;
         }
 

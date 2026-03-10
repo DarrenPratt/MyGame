@@ -12,7 +12,7 @@ public class UseCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine(ColorConsole.Error("Use what?"));
+            io.WriteLine(ColorConsole.Error(GameMessages.Use.NoItem));
             return;
         }
 
