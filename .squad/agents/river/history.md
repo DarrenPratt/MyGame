@@ -162,3 +162,79 @@
 - Each test uses the class-scoped `_testDirectory` (unique per `IDisposable` instance) — no file collisions
 - Separate filename per test (e.g. `"threat-level"`, `"unlock-exit"`) prevents cross-test file interference
 - Tests prove Judy's fix correct: all previously failing assertions now pass against the patched code
+
+
+### Session 2026-03-10 — Issue #38: ExamineCommand Test Coverage
+
+**Wrote 16 new tests** in `src/MyGame.Tests/ExamineCommandTests.cs` — dedicated coverage for `ExamineCommand`.
+
+**What ExamineCommand does:**
+- Searches `state.CurrentRoom.Items` then `state.Inventory` (via `Concat`) for an item matching by `Id` (exact, case-insensitive) or `Name.Contains` (partial, case-insensitive)
+- If `command.Noun` is null → prints `ColorConsole.Error("Examine what?")`
+- If item found → prints `item.Description`
+- If not found → prints `ColorConsole.Error("You don't see any \"{noun}\" to examine.")`
+- **Does NOT search room NPCs** — examining an NPC by name returns the not-found error
+- Verb: `"examine"`; Aliases: `["x", "inspect", "read"]`
+
+**Tests written:**
+- `Verb_IsExamine` — verb registration
+- `Aliases_ContainExpectedShortcuts` — Theory for x/inspect/read
+- `Execute_NoNoun_ShowsUsageError` — null noun → "Examine what?"
+- `Execute_NoNoun_DoesNotCrash_AndWritesOutput` — always writes at least one line
+- `Execute_ItemInRoom_ById_ShowsItemDescription` — exact ID match in room
+- `Execute_ItemInRoom_ByName_ShowsItemDescription` — partial Name.Contains match
+- `Execute_ItemInRoom_ByName_IsCaseInsensitive` — UPPERCASE ID still finds item
+- `Execute_ItemInInventory_ShowsItemDescription` — item in inventory found by ID
+- `Execute_ItemInInventory_ByName_ShowsItemDescription` — inventory item found by partial name
+- `Execute_ItemNotInRoomOrInventory_ShowsNotFoundError` — error contains the noun
+- `Execute_ItemNotFound_DoesNotPrintAnyDescription` — other items' descriptions not leaked
+- `Execute_SameIdInRoomAndInventory_ReturnsRoomItemFirst` — room searched before inventory (Concat order)
+- `Execute_NpcInRoom_ButNoMatchingItem_ShowsNotFoundError` — NPCs not examined, error returned
+- `Execute_DoesNotMutateInventoryOrRoom` — examine is read-only (no side effects)
+
+**Total tests:** 227 (205 existing + 22 new)
+
+**Edge cases identified:**
+- NPC in room is not findable via examine (only items) — examining Viktor returns not-found error
+- Room item takes priority over identical inventory item (Concat order: room first)
+- Case-insensitive search covers both ID and Name lookups
+- Partial name match (`Name.Contains`) means "corp" finds "Corp Keycard"
+
+## Session 11 — Scribe Orchestration (2026-03-10T19:15:00Z)
+
+- **Orchestration logs created**: Documented Judy's viktor_met flag fix (Issue #46) and your ExamineCommand test coverage (Issue #38)
+- **Session log written**: Comprehensive summary of parallel work; 227 tests passing
+- **Decisions merged**: All inbox files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md with full details and deduplicated
+- **Inbox cleaned**: All merged files deleted from .squad/decisions/inbox/
+- **History updated**: Judy and River histories appended with Session 11 and earlier summaries
+- **Git commit prepared**: .squad/ orchestration, logs, and updated decisions committed
+
+### Session — Issue #32: Delete Parser.cs (unblock Judy)
+
+**Rewrote ParserTests.cs** to call `CommandParser.Parse()` directly, then deleted `Parser.cs`.
+
+**What Parser.cs was:** A 6-line instance-method wrapper — `public ParsedCommand Parse(string input) => CommandParser.Parse(input);`. No added logic; pure pass-through.
+
+**What replaced it in tests:** `CommandParser.Parse(input)` called as a static method directly. All 6 tests kept identical assertions; only `new Parser()` removed.
+
+**How CommandParser works:** Static class in `MyGame.Engine`. `Parse(string input)` trims/lowercases, splits on first space for Verb + rest, then scans rest for `" on "` to populate `Target`. Returns `ParsedCommand(Verb, Noun?, Target?)` record.
+
+All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/inbox/river-parser-cleanup.md`.
+
+## Team Updates
+
+- **2026-03-10 — Judy fixed viktor_met flag:**Generic flag-setting in TalkCommand now sets `{npc.Id}_met` for all NPCs. 227 tests passing (including your 16 new ExamineCommand tests unexpectedly committed).
+- **2026-03-10 — River completed ExamineCommand test coverage:** 16 comprehensive tests covering all behaviors, priorities, and boundaries. Dedicated test file confirms ExamineCommand is standalone command (not noun on LookCommand).
+- **2026-03-10 — River validated save/load state corruption fix:** 6 new SaveLoadTests validate Judy's persistence of DroneThreatLevel, DroneThreatThreshold, and exit lock states.
+
+### Session 2026-03-10 — Issue #32: Delete Parser.cs (unblock Judy)
+
+**Rewrote ParserTests.cs** to call `CommandParser.Parse()` directly, then deleted `Parser.cs`.
+
+**What Parser.cs was:** A 6-line instance-method wrapper — `public ParsedCommand Parse(string input) => CommandParser.Parse(input);`. No added logic; pure pass-through.
+
+**What replaced it in tests:** `CommandParser.Parse(input)` called as a static method directly. All 6 tests kept identical assertions; only `new Parser()` removed.
+
+**How CommandParser works:** Static class in `MyGame.Engine`. `Parse(string input)` trims/lowercases, splits on first space for Verb + rest, then scans rest for `" on "` to populate `Target`. Returns `ParsedCommand(Verb, Noun?, Target?)` record.
+
+All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/inbox/river-parser-cleanup.md`.

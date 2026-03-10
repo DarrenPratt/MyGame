@@ -13,7 +13,7 @@ public class LookCommand : ICommand
     {
         if (command.Noun is not null)
         {
-            var item = FindItem(command.Noun, state);
+            var item = state.FindItem(command.Noun);
             if (item is not null)
             {
                 io.WriteLine(item.Description);
@@ -54,29 +54,21 @@ public class LookCommand : ICommand
         if (room.Items.Count > 0)
         {
             io.WriteLine("");
-            io.WriteLine("Items here: " + string.Join(", ", room.Items.Select(i => ColorConsole.Yellow(i.Name))));
+            io.WriteLine(GameMessages.Look.ItemsHere + string.Join(", ", room.Items.Select(i => ColorConsole.Yellow(i.Name))));
         }
 
         if (room.Npcs.Count > 0)
         {
             io.WriteLine("");
-            io.WriteLine("You see here: " + string.Join(", ", room.Npcs.Select(npc => ColorConsole.Yellow(npc.Name))));
+            io.WriteLine(GameMessages.Look.NpcsHere + string.Join(", ", room.Npcs.Select(npc => ColorConsole.Yellow(npc.Name))));
         }
 
         if (room.Exits.Count > 0)
         {
             io.WriteLine("");
-            io.WriteLine("Exits: " + string.Join(", ", room.Exits.Keys.OrderBy(k => k)
+            io.WriteLine(GameMessages.Look.Exits + string.Join(", ", room.Exits.Keys.OrderBy(k => k)
                 .Select(exit => ColorConsole.Green(exit))));
         }
     }
 
-    private static Item? FindItem(string noun, GameState state)
-    {
-        return state.CurrentRoom.Items
-            .Concat(state.Inventory)
-            .FirstOrDefault(i =>
-                i.Id.Equals(noun, StringComparison.OrdinalIgnoreCase) ||
-                i.Name.Contains(noun, StringComparison.OrdinalIgnoreCase));
-    }
 }

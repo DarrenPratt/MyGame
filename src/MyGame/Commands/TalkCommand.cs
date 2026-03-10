@@ -13,7 +13,7 @@ public class TalkCommand : ICommand
     {
         if (string.IsNullOrWhiteSpace(command.Noun))
         {
-            io.WriteLine("Talk to whom?");
+            io.WriteLine(GameMessages.Talk.ToWhom);
             return;
         }
 
@@ -23,7 +23,7 @@ public class TalkCommand : ICommand
 
         if (string.IsNullOrWhiteSpace(noun))
         {
-            io.WriteLine("Talk to whom?");
+            io.WriteLine(GameMessages.Talk.ToWhom);
             return;
         }
 
@@ -57,24 +57,24 @@ public class TalkCommand : ICommand
             for (var i = 0; i < current.Responses.Count; i++)
                 io.WriteLine($"  {ColorConsole.Green($"{i + 1}.")} {current.Responses[i].Text}");
 
-            io.Write("> ");
+            io.Write(GameMessages.Prompts.DialogueInput);
             var input = io.ReadLine();
             if (!int.TryParse(input, out var choice) || choice < 1 || choice > current.Responses.Count)
             {
-                io.WriteLine("You end the conversation.");
+                io.WriteLine(GameMessages.Talk.EndConversation);
                 return;
             }
 
             var response = current.Responses[choice - 1];
             if (response.NextNodeId is null)
             {
-                io.WriteLine("Goodbye.");
+                io.WriteLine(GameMessages.Talk.Goodbye);
                 return;
             }
 
             if (!nodes.TryGetValue(response.NextNodeId, out current))
             {
-                io.WriteLine("Goodbye.");
+                io.WriteLine(GameMessages.Talk.Goodbye);
                 return;
             }
         }

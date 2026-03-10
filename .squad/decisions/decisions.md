@@ -269,6 +269,114 @@
 - **Finding:** Parser.cs delegates entirely to CommandParser with no added value.
 - **Action:** Judy to remove class and update imports.
 
+---
+
+## Code Organization Decisions — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Approved  
+**Scope:** String centralization and item lookup deduplication
+
+### 1. Static const class for narrative strings (Issue #34)
+
+**Context:** `GameEngine.cs` and ten command files contained hardcoded player-facing string literals scattered throughout—death messages, win/lose banners, drone warnings, command errors, and UI prompts. Difficult to find, update consistently, or reference from tests.
+
+**Decision:** Extract all player-facing narrative and UI strings into a single static class `GameMessages` (`src/MyGame/Engine/GameMessages.cs`), using `public const string` members grouped by context in nested static classes.
+
+**Structure:**
+- `GameMessages.Defaults` — title, subtitle, intro text
+- `GameMessages.Prompts` — command input prompt, dialogue prompt, try-again prompt
+- `GameMessages.Drone` — warning messages at threat levels 1–3
+- `GameMessages.Win` — server-room entry lines, default win narrative, win banner
+- `GameMessages.Lose` — default lose narrative, lose banner
+- `GameMessages.Quit` — quit message, quit banner
+- `GameMessages.Go`, `Take`, `Use`, `Look`, `Help`, `Drop`, `Examine`, `Inventory`, `Talk` — command-specific strings
+
+**Rationale:**
+- Single place to find and update any player-facing string—no grep needed
+- Simple: one file, const strings, no localization framework needed
+- Pure refactor—zero behaviour change, all 227 tests pass unchanged
+- Consolidation pattern: multi-line prose previously written as sequential `_io.WriteLine` calls is now a single const with `\n` delimiters, split via existing `SplitLines` helper. Matches existing JSON world message pattern.
+
+**Impact:**
+- Maintainability improved: all UI text centralized
+- Consistency guaranteed: shared messaging across game engine and all commands
+- Testability unchanged: ANSI codes in output remain transparent to tests
+
+### 2. GameState Extension Methods for Item Lookup (Issue #33)
+
+**Context:** Four command classes (`TakeCommand`, `DropCommand`, `ExamineCommand`, `UseCommand`) each implemented identical item search logic (find by exact ID or partial name match, case-insensitive). Duplicated logic created maintenance risk.
+
+**Decision:** Add `GameStateExtensions.cs` in `MyGame.Engine` providing three extension methods on `GameState` for item lookup:
+```csharp
+public static Item? FindItem(this GameState state, string noun)
+public static Item? FindRoomItem(this GameState state, string noun)
+public static Item? FindInventoryItem(this GameState state, string noun)
+```
+
+All three use a shared private predicate: exact ID match (case-insensitive) OR partial name contains (case-insensitive).
+
+**Rationale:**
+- Single source of truth: The same predicate logic was inlined in four command classes. Any future change to match semantics (e.g., adding aliases) now requires only one edit.
+- Extension method over static class: `state.FindItem(noun)` reads naturally at call sites, consistent with idiomatic C# and existing GameState API.
+- Three scopes preserve existing semantics: `TakeCommand` only searches the room (can't take what you're holding); `DropCommand` and `UseCommand` only search inventory; `ExamineCommand` searches both. Separate methods make scope intent explicit rather than hiding it in flags parameter.
+
+**Impact:**
+- Code clarity: Commands now express intent explicitly via method name (FindRoomItem vs. FindInventoryItem)
+- Maintainability: Predicate changes propagate instantly to all callers
+- Extensibility: Adding new search semantics (aliases, fuzzy matching) requires only changes to the predicate
+
+---
+
+## Narrator Variant Coverage — Rogue (Content Designer)
+
+**Date:** 2026-03-10  
+**Status:** Approved  
+**Scope:** Dynamic room descriptions for all 10 rooms
+
+### Narrator Variants Implementation (Issue #36)
+
+**Context:** Most rooms had only static descriptions. No dynamic narration based on player progress, location familiarity, or mission state. World felt static despite rich underlying game mechanics (flags, item state, visit counts).
+
+**Decision:** All 10 rooms now include dynamic narrator variants triggered by game state flags. Static descriptions have been replaced with context-aware alternatives reflecting player progress, location familiarity, and mission status.
+
+**Variant Categories & Coverage:**
+
+1. **Return-Visit Variants (visit_count_gt_1)** — All 10 rooms
+   - When player revisits, description shifts from discovery/wonder to familiarity and tactical awareness
+   - Example: Rooftop base description emphasizes visual scale; return visit emphasizes danger ("green emergency lights feel less alien, more like camouflage")
+
+2. **Progression-Based Variants**
+   - `keycard_used`: Rooftop, lobby, corridor, server (escalating corporate alarm, urgency, danger)
+   - `cred_chip_obtained`: Tunnel, den (leverage gained, reputation earned in undercity)
+
+3. **Item-Possession Variants**
+   - `drive in inventory`: Server, corridor (emotional weight of success, extraction danger; corridor variant combines keycard_used + drive-in-inventory for final-escape context)
+
+4. **Existing Variants** (Maintained)
+   - `alley`: keycard_used, drive in inventory
+   - `bar`: viktor_met
+   - `plaza`: cred_chip_obtained
+   - `checkpoint`: guard_distracted, guard_bribed
+
+**Narrative Consistency:**
+- All variants maintain cyberpunk voice (gritty, neon-soaked, emotional, 2–4 sentences)
+- Preserve base description themes while adding emotional/tactical layers
+- Use present-tense perspective consistent with existing content
+- Avoid redundancy (no duplicate flags within a room)
+
+**Implementation Notes:**
+- Flag choices leverage existing game state: `visit_count_gt_1`, `keycard_used`, `cred_chip_obtained`, `viktor_met`
+- All variants follow existing JSON schema with `requiredFlags` and `requiredInventoryItems`
+- No engine changes required; variants are additive entries in `narratorVariants` array
+- Variants selected by NarratorEngine at runtime based on most-specific match (highest combined flag + inventory match count)
+
+**Impact:**
+- Player Experience: World feels dynamic and reactive—rooms acknowledge progress and emotional journey
+- Replayability: Variants provide different perspectives on familiar spaces across playthroughs
+- Story Pacing: Return visits and progression variants reinforce narrative beats (escalation → success → extraction)
+- Content Density: 19 new variant entries distributed across 6 rooms, 10 rooms with complete variant coverage
+
 **savegame.json Committed to Repo (#41)**
 - **Finding:** Runtime artifact accidentally committed; creates noise in diffs.
 - **Action:** Judy to remove file and add to .gitignore.
@@ -284,6 +392,54 @@
 **Duplicated FindItem Logic (#33)**
 - **Finding:** Identical method in LookCommand and ExamineCommand.
 - **Action:** Judy to extract into shared ItemRepository utility (or use existing if present).
+
+---
+
+## Decision: Parser.cs Deleted — Tests Repointed to CommandParser
+
+**Author:** River (Tester)  
+**Date:** 2026-03-10  
+**Closes:** Issue #32
+
+### What Happened
+
+`Parser.cs` was a 6-line wrapper that only existed to expose `CommandParser.Parse(string input)` as an instance method:
+
+```csharp
+public class Parser
+{
+    public ParsedCommand Parse(string input) => CommandParser.Parse(input);
+}
+```
+
+The only thing keeping it alive was `ParserTests.cs`, which instantiated `new Parser()` in all 6 tests.
+
+### Change Made
+
+- **`src/MyGame.Tests/ParserTests.cs`** — all 6 tests rewritten to call `CommandParser.Parse(input)` directly (static call, no instantiation).
+- **`src/MyGame/Engine/Parser.cs`** — deleted.
+
+### Behavioral Coverage Preserved
+
+All 6 test behaviors retained verbatim:
+1. `use keycard` → Verb=use, Noun=keycard, Target=null
+2. `use keycard on door` → Verb=use, Noun=keycard, Target=door
+3. `use item on target with spaces` → multi-word target captured
+4. `talk to viktor` → "to viktor" kept as Noun (stripping "to" is TalkCommand's job)
+5. `go north` → standard two-part command, no target
+6. `""` (empty) → Verb="", Noun=null, Target=null
+
+### CommandParser Design
+
+`CommandParser` is a `static class` in `MyGame.Engine`. Its `Parse(string input)` method:
+- Trims and lowercases input
+- Splits on first space to get Verb + rest
+- Scans rest for `" on "` keyword to split Noun from Target
+- Returns a `ParsedCommand` record (Verb, Noun?, Target?)
+
+### Status
+
+All 227 tests pass. `Parser.cs` is gone from the codebase.
 
 ### Architectural Strengths
 
@@ -301,12 +457,208 @@
 
 ---
 
+## Fix Decisions — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Complete
+
+### Decision 1: Persist Drone Threat and Exit Lock State in Save/Load (Issue #35)
+
+**Problem:** Save/Load commands persisted only room, inventory, and flags. DroneThreatLevel, DroneThreatThreshold, and exit IsLocked states were silently dropped on reload.
+
+**Decision:**
+1. Change `GameState.DroneThreatThreshold` from `init` to `set` to allow LoadCommand to restore it
+2. Extend `SaveData` record with `DroneThreatLevel`, `DroneThreatThreshold`, and `ExitLockStates` (roomId → direction → isLocked)
+3. Implement backward compatibility: old saves missing fields default to 0/0/null
+
+**Rationale:**
+- Players can no longer exploit save/load to reset drone threat
+- Door unlock progress persists across save/load cycles
+- Minimal changes to GameState (one modifier change)
+- Full backward compatibility with existing save files
+
+**Consequences:**
+- All 211 tests pass (205 pre-existing + 6 new from River)
+- Mid-game saves no longer silently corrupt
+
+### Decision 2: Set NPC-Met Flags in TalkCommand (Issue #46)
+
+**Problem:** Narrator variants keyed on flags like `viktor_met` and `guard_bribed` were unreachable because TalkCommand never set any flags during dialogue interactions.
+
+**Decision:** Add `state.Flags.Add($"{npc.Id}_met")` in `TalkCommand.Execute()` immediately after confirming the NPC has dialogue, before entering the conversation loop. Generic approach: sets `viktor_met`, `mox_met`, `guard_met` for any NPC dialogue.
+
+**Rationale:**
+- **No new infrastructure:** `GameState.Flags` and `NarratorEngine` were already wired correctly
+- **Generic over specific:** Using `npc.Id` instead of hardcoding `"viktor"` means all NPCs benefit automatically
+- **Trigger point:** Setting flag before loop means even minimal dialogue counts as having met the NPC
+- **Flag naming convention:** `{npc.Id}_met` mirrors existing world-file conventions (`keycard_used`, `cred_chip_obtained`)
+
+**Consequences:**
+- `viktor_met` narrator variant in bar is now reachable after any Viktor dialogue
+- `mox_met` and `guard_met` flags also set (no current room variants use them, available for future content)
+- All 227 tests pass (211 pre-existing + 16 new ExamineCommand tests from River)
+
+---
+
+## Test Decisions — River (Tester)
+
+**Date:** 2026-03-10  
+**Status:** Complete
+
+### Decision 1: Save/Load State Corruption Tests (Issue #35)
+
+**What Was Tested:** Six tests in `SaveLoadTests.cs` proving Judy's fix to SaveCommand/LoadCommand:
+- `SaveLoad_PreservesDroneThreatLevel` — DroneThreatLevel=3 restored after reload
+- `SaveLoad_PreservesDroneThreatThreshold` — Non-default threshold (6) restored after reload
+- `SaveLoad_PreservesUnlockedExit` — Unlocked exit remains unlocked after reload
+- `SaveLoad_DroneThreatZeroByDefault_NotCorrupted` — Zero value not silently dropped
+- `SaveLoad_NonZeroThreatSurvivesRoundtrip` — High threat cannot be reset via save/load exploit
+- `SaveLoad_LockedExitRemainsLockedAfterReload` — Locked exit stays locked (baseline)
+
+**Key Design Decisions:**
+1. Private `TwoRoomStateWithLockedExit()` helper — not added to WorldFactory (save/load-specific concept)
+2. Unique filename per test within shared `_testDirectory` — prevents test interference
+3. Separate fresh `newState` objects — no state sharing between save and load phases
+4. `DroneThreatThreshold` test requires `init` → `set` change (Judy's fix enables this)
+5. Backward compatibility — old saves not in test scope (implementation detail handled by Judy)
+
+**Total Tests:** 211 (205 pre-existing + 6 new)
+
+### Decision 2: ExamineCommand Test Coverage (Issue #38)
+
+**What Was Tested:** 16 new tests in `ExamineCommandTests.cs` providing comprehensive coverage.
+
+**Tests Written:**
+- **Registration:** Verb is "examine"; aliases [x, inspect, read]
+- **Error Handling:** Null noun → "Examine what?"; always produces output
+- **Room Discovery:** By exact ID, by partial name, case-insensitive search
+- **Inventory Discovery:** By ID, by partial name
+- **Edge Cases:** Not-found error, no description leakage, room-before-inventory priority, NPC boundary, state mutation guard
+
+**Key Design Decisions:**
+1. **Dedicated test file vs. append:** Created `ExamineCommandTests.cs` (not appended to `CommandTests.cs`). Reason: New `ExamineCommand` is standalone, deserves its own file consistent with `TalkCommandTests.cs`
+
+2. **NPC behavior: not-found error is correct:** `ExamineCommand.FindItem` only searches `CurrentRoom.Items` and `Inventory`. NPCs are not items. Decision: **do not add NPC examine behavior** — that is out of scope for this command. Test `Execute_NpcInRoom_ButNoMatchingItem_ShowsNotFoundError` guards this boundary.
+
+3. **Room-before-inventory priority:** Test `Execute_SameIdInRoomAndInventory_ReturnsRoomItemFirst` documents and locks in the `Concat(Inventory)` behavior.
+
+4. **ANSI transparency via OutputContains:** Tests use `io.OutputContains()` which does case-insensitive substring matching. ANSI codes in output don't interfere with assertions.
+
+5. **State mutation test added:** Test `Execute_DoesNotMutateInventoryOrRoom` guards against accidental side effects. Examine is a pure read operation.
+
+**Total Tests:** 227 (211 pre-existing + 16 new ExamineCommand tests)
+
+---
+
 ## Summary
 
 All major decisions documented and deduped. Team achieved:
 - ✅ Clean architecture with testability first
 - ✅ Rich cyberpunk narrative integrated with core mechanics
-- ✅ Comprehensive test coverage (205 tests)
+- ✅ Comprehensive test coverage (227 tests)
 - ✅ Full implementation matching architecture and passing all tests
 - ✅ JSON as sole world source, dead code removed
+- ✅ Save/load state corruption fixed
+- ✅ NPC-met narrator flags functional
+- ✅ ExamineCommand fully tested
 - ⚠️ 12 improvement issues identified for v0.3 and beyond
+
+---
+
+## Extract DroneThreatSystem — Johnny (Lead & Architect)
+
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Scope:** Issue #44 — Extract drone threat logic into dedicated class
+
+### Context
+
+Drone threat logic was inline in `GameEngine.RunSession()`: a 15-line block that incremented `_state.DroneThreatLevel`, emitted three warning messages by level, and set `HasLost`/`IsRunning` when the threshold was reached. This mixed game-rule logic with the engine's I/O loop.
+
+### Decision
+
+Extract all drone threat behaviour into `src/MyGame/Engine/DroneThreatSystem.cs`.
+
+**Class design:**
+- `IsHighRiskRoom()` — checks HighRiskRoomIds
+- `Increment()` — increments level, returns warning or null; sets HasLost/IsRunning at threshold
+- `Reset()` — resets DroneThreatLevel = 0
+
+**Key choices:**
+- State as dependency: DroneThreatLevel and DroneThreatThreshold remain on GameState for save/load compatibility
+- Increment() returns warning string; caller controls I/O delivery
+- Death side-effects owned by system
+- _droneSystem re-created on factory restart
+
+**Consequences:**
+- GameEngine's 15-line drone block replaced by 4 lines
+- Unused prevRoomId local variable removed
+- All 227 tests pass without modification
+
+---
+
+## Parser.cs Retained — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Blocked  
+**Scope:** Issue #32
+
+### Finding
+
+`Parser.cs` appears dead in production (wrapper around `CommandParser.Parse()`). But `ParserTests.cs` contains 6 tests instantiating `new Parser()`. River wrote these to cover `ParsedCommand.Target` field parsing.
+
+### Recommendation
+
+Migrate `ParserTests.cs` to call `CommandParser.Parse()` directly first, then delete `Parser.cs`. Requires River coordination.
+
+---
+
+## Savegame.json Removed from Tracking — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Scope:** Issue #41
+
+### Decision
+
+- Removed `src/MyGame/savegame.json` from git tracking via `git rm --cached`
+- File left on disk intact
+- Added `savegame.json` to `.gitignore` under `# Runtime artifacts` section
+- Flat name (no glob) because file is written to working directory
+
+### Consequences
+
+- `savegame.json` will never appear in `git status` during game play
+- Existing save file on disk unaffected
+
+---
+
+## Duplicate Item Lookup Code — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Complete  
+**Scope:** Issue #31 — Duplicate item lookup code across ExamineCommand and LookCommand  
+**PR:** #62
+
+### What Was Done
+
+`LookCommand` contained a private `FindItem(string noun, GameState state)` method that was a duplicate of `GameStateExtensions.FindItem()` already in use by `ExamineCommand` (from Issue #33).
+
+**Changes to `src/MyGame/Commands/LookCommand.cs`:**
+- Line 16: `FindItem(command.Noun, state)` → `state.FindItem(command.Noun)`
+- Lines 74–81: Private `FindItem` method removed (8 lines deleted)
+- `using MyGame.Models;` retained — `Room` type still referenced
+
+Net diff: 1 insertion, 9 deletions.
+
+### Test Results
+
+**Total: 227 tests pass** (no regressions)
+
+### Pattern Observed
+
+When `GameStateExtensions` was introduced (Issue #33), `ExamineCommand` was migrated immediately but `LookCommand` was missed. **Recommendation:** Future shared-utility extractions should include a grep over all command files before closing the issue.
+
+---
+
+**Last Updated:** 2026-03-10T19:41:00Z

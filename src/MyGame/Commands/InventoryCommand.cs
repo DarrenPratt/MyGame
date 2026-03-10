@@ -12,11 +12,11 @@ public class InventoryCommand : ICommand
     {
         if (state.Inventory.Count == 0)
         {
-            io.WriteLine("You're carrying nothing.");
+            io.WriteLine(GameMessages.Inventory.Empty);
             return;
         }
 
-        io.WriteLine("You're carrying:");
+        io.WriteLine(GameMessages.Inventory.Header);
         foreach (var item in state.Inventory)
             io.WriteLine($"  - {ColorConsole.Yellow(item.Name)}");
     }
