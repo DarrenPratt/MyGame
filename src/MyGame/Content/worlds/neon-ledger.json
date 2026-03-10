@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "Neon Ledger",
   "subtitle": "A Cyberpunk Text Adventure",
   "introText": "You've been hired to infiltrate SynthCorp's data vaults and retrieve stolen research. Your fixer's last message burns on your wrist terminal: \"Package in the corp system. Get in, get the drive, get out.\"\n\nYou're in the alley behind The Byte Bar, neon shadows stretching across wet pavement. The data drive worth your life—and someone else's death—waits in the server room. Security won't stop you. The drones will.\n\nMake your move, runner.",
@@ -142,6 +142,27 @@
           ],
           "requiredInventoryItems": [],
           "description": "The plaza is thick with security personnel today. You can feel the tension—corpo enforcers in sleek black armor, drones sweeping overhead. The checkpoint to the north is your gateway in, but the guards look hungry. With the cred chip, you might talk your way through."
+        },
+        {
+          "requiredFlags": [
+            "visit_count_gt_1"
+          ],
+          "requiredInventoryItems": [],
+          "description": "You've crossed this plaza before. The chrome facades that once seemed imposing now feel like the walls of a cage. Corporate drones circle overhead in predictable patterns. Workers shuffle past like ghosts—they don't see you, but the cameras do. Always watching."
+        },
+        {
+          "requiredFlags": [
+            "keycard_used"
+          ],
+          "requiredInventoryItems": [],
+          "description": "The plaza is locked down. Security teams in black armor move with military precision, sweeping through corridors. The holographic ads flicker frantically—corporate alerts pulsing red. The keycard in your pocket feels like it's burning a hole through your ribs. They know something's wrong. They just don't know it's you. Yet."
+        },
+        {
+          "requiredFlags": [],
+          "requiredInventoryItems": [
+            "drive"
+          ],
+          "description": "The plaza hums with lethal intent. Security sweeps have intensified—drones cutting tight patterns through the air, guards stopping and scanning random workers. The data drive in your pocket is like carrying a live grenade. Every camera, every eye, every moment pulls you deeper into a trap. The checkpoint north is a gauntlet. The tunnel south is a gamble. Choose."
         }
       ],
       "exits": [
@@ -508,7 +529,8 @@
               "text": "Thanks for the info.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "viktor_gave_intel"
         },
         {
           "id": "rooftops",
@@ -591,7 +613,8 @@
               "text": "Thanks for the help.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "mox_gave_intel"
         },
         {
           "id": "undercity",

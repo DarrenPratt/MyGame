@@ -1,4 +1,4 @@
-using MyGame.Engine;
+﻿using MyGame.Engine;
 using MyGame.Models;
 using System;
 using System.IO;
@@ -385,9 +385,6 @@ public class JsonWorldLoaderTests : IDisposable
         // Assert
         Assert.Equal("server", state.WinRoomId);
     }
-=======
-
->>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)
     // ── Metadata forwarding ───────────────────────────────────────────────
 
     [Fact]
@@ -694,10 +691,7 @@ public class JsonWorldLoaderTests : IDisposable
         var path = CreateTestJsonFile("{ this is not valid json }", "bad.json");
         var loader = new JsonWorldLoader();
 
-        Assert.Throws<System.Text.Json.JsonException>(() => loader.Load(path));
-=======
         Assert.Throws<JsonException>(() => loader.Load(path));
->>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)
     }
 
     [Fact]
@@ -709,20 +703,6 @@ public class JsonWorldLoaderTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => loader.Load(path));
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    private static string MinimalJsonWith(string extra) => $@"{{
-    {extra}
-    ""startRoomId"": ""room1"",
-    ""winRoomId"": ""room1"",
-    ""rooms"": [
-        {{ ""id"": ""room1"", ""name"": ""Room"", ""description"": ""A room."" }}
-    ],
-    ""items"": [],
-    ""npcs"": []
-}}";
-}
-=======
     private static string MinimalJsonWith(string extra) => $$"""
         {
             {{extra}}
@@ -736,4 +716,3 @@ public class JsonWorldLoaderTests : IDisposable
         }
         """;
 }
->>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)
