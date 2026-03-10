@@ -162,3 +162,40 @@
 - Each test uses the class-scoped `_testDirectory` (unique per `IDisposable` instance) — no file collisions
 - Separate filename per test (e.g. `"threat-level"`, `"unlock-exit"`) prevents cross-test file interference
 - Tests prove Judy's fix correct: all previously failing assertions now pass against the patched code
+
+
+### Session 2026-03-10 — Issue #38: ExamineCommand Test Coverage
+
+**Wrote 16 new tests** in `src/MyGame.Tests/ExamineCommandTests.cs` — dedicated coverage for `ExamineCommand`.
+
+**What ExamineCommand does:**
+- Searches `state.CurrentRoom.Items` then `state.Inventory` (via `Concat`) for an item matching by `Id` (exact, case-insensitive) or `Name.Contains` (partial, case-insensitive)
+- If `command.Noun` is null → prints `ColorConsole.Error("Examine what?")`
+- If item found → prints `item.Description`
+- If not found → prints `ColorConsole.Error("You don't see any \"{noun}\" to examine.")`
+- **Does NOT search room NPCs** — examining an NPC by name returns the not-found error
+- Verb: `"examine"`; Aliases: `["x", "inspect", "read"]`
+
+**Tests written:**
+- `Verb_IsExamine` — verb registration
+- `Aliases_ContainExpectedShortcuts` — Theory for x/inspect/read
+- `Execute_NoNoun_ShowsUsageError` — null noun → "Examine what?"
+- `Execute_NoNoun_DoesNotCrash_AndWritesOutput` — always writes at least one line
+- `Execute_ItemInRoom_ById_ShowsItemDescription` — exact ID match in room
+- `Execute_ItemInRoom_ByName_ShowsItemDescription` — partial Name.Contains match
+- `Execute_ItemInRoom_ByName_IsCaseInsensitive` — UPPERCASE ID still finds item
+- `Execute_ItemInInventory_ShowsItemDescription` — item in inventory found by ID
+- `Execute_ItemInInventory_ByName_ShowsItemDescription` — inventory item found by partial name
+- `Execute_ItemNotInRoomOrInventory_ShowsNotFoundError` — error contains the noun
+- `Execute_ItemNotFound_DoesNotPrintAnyDescription` — other items' descriptions not leaked
+- `Execute_SameIdInRoomAndInventory_ReturnsRoomItemFirst` — room searched before inventory (Concat order)
+- `Execute_NpcInRoom_ButNoMatchingItem_ShowsNotFoundError` — NPCs not examined, error returned
+- `Execute_DoesNotMutateInventoryOrRoom` — examine is read-only (no side effects)
+
+**Total tests:** 227 (205 existing + 22 new)
+
+**Edge cases identified:**
+- NPC in room is not findable via examine (only items) — examining Viktor returns not-found error
+- Room item takes priority over identical inventory item (Concat order: room first)
+- Case-insensitive search covers both ID and Name lookups
+- Partial name match (`Name.Contains`) means "corp" finds "Corp Keycard"
