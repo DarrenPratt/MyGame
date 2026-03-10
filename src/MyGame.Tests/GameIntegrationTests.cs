@@ -1,5 +1,4 @@
 using MyGame.Commands;
-using MyGame.Content;
 using MyGame.Engine;
 using MyGame.Tests.Helpers;
 using Xunit;
@@ -11,8 +10,9 @@ namespace MyGame.Tests;
 /// Uses FakeInputOutput to inject inputs and capture results without a real console.
 ///
 /// Winning path:
-///   alley → east(bar) → up(rooftop) → take keycard → down(bar) → east(lobby)
-///   → use keycard → north(server) [WIN]
+///   alley → east(bar) → up(rooftop) → take keycard → down(bar) → west(alley)
+///   → down(tunnel) → south(den) → take cred_chip → north(tunnel) → north(plaza)
+///   → north(checkpoint) → use cred_chip → north(lobby) → use keycard → north(server) [WIN]
 /// </summary>
 public class GameIntegrationTests
 {
@@ -20,16 +20,22 @@ public class GameIntegrationTests
     // Helpers
     // ──────────────────────────────────────────────
 
+    private static GameState BuildState()
+    {
+        var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
+        return new JsonWorldLoader().Load(worldPath).State;
+    }
+
     private static GameEngine BuildEngine(FakeInputOutput io)
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         return new GameEngine(state, registry, io);
     }
 
     private static (GameEngine engine, GameState state, CommandRegistry registry) BuildComponents()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
         var engine = new GameEngine(state, registry, io);
@@ -57,17 +63,25 @@ public class GameIntegrationTests
     [Fact]
     public void WinningPath_CompletesWithHasWonTrue()
     {
-        // Arrange — feed the complete winning input sequence then quit to end run()
+        // Arrange — feed the complete winning input sequence
         var io = new FakeInputOutput(
-            "go east",      // alley → bar
-            "go up",        // bar → rooftop
-            "take keycard", // pick up the keycard
-            "go down",      // rooftop → bar
-            "go east",      // bar → lobby
-            "use keycard",  // unlock north exit
-            "go north"      // lobby → server (WIN — engine stops here)
+            "go east",        // alley → bar
+            "go up",          // bar → rooftop
+            "take keycard",   // pick up the keycard
+            "go down",        // rooftop → bar
+            "go west",        // bar → alley
+            "go down",        // alley → tunnel
+            "go south",       // tunnel → den
+            "take cred_chip", // pick up the cred_chip
+            "go north",       // den → tunnel
+            "go north",       // tunnel → plaza
+            "go north",       // plaza → checkpoint
+            "use cred_chip",  // unlock checkpoint→north
+            "go north",       // checkpoint → lobby
+            "use keycard",    // unlock lobby→north
+            "go north"        // lobby → server (WIN — engine stops here)
         );
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -83,9 +97,11 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput(
             "go east", "go up", "take keycard",
-            "go down", "go east", "use keycard", "go north"
+            "go down", "go west", "go down", "go south", "take cred_chip",
+            "go north", "go north", "go north", "use cred_chip",
+            "go north", "use keycard", "go north"
         );
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -99,9 +115,11 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput(
             "go east", "go up", "take keycard",
-            "go down", "go east", "use keycard", "go north"
+            "go down", "go west", "go down", "go south", "take cred_chip",
+            "go north", "go north", "go north", "use cred_chip",
+            "go north", "use keycard", "go north"
         );
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -117,20 +135,15 @@ public class GameIntegrationTests
     [Fact]
     public void GoToServerWithoutKeycard_IsBlocked()
     {
-        // Arrange — navigate to lobby without picking up keycard
-        var state = WorldBuilder.Build();
+        // Arrange — place player directly in lobby without keycard
+        var state = BuildState();
         var registry = BuildRegistry(state);
+        state.CurrentRoomId = "lobby";
+
         var io = new FakeInputOutput();
 
-        // Manually navigate to lobby
-        registry.Execute(new ParsedCommand("go", "east"), state, io);  // alley → bar
-        registry.Execute(new ParsedCommand("go", "east"), state, io);  // bar → lobby
-
-        Assert.Equal("lobby", state.CurrentRoomId);
-        var io2 = new FakeInputOutput();
-
         // Act — attempt to go north into server without keycard
-        registry.Execute(new ParsedCommand("go", "north"), state, io2);
+        registry.Execute(new ParsedCommand("go", "north"), state, io);
 
         // Assert — blocked
         Assert.Equal("lobby", state.CurrentRoomId);
@@ -140,18 +153,17 @@ public class GameIntegrationTests
     [Fact]
     public void GoToServerWithoutKeycard_PrintsLockedMessage()
     {
-        var state = WorldBuilder.Build();
+        // Place player directly in lobby without keycard
+        var state = BuildState();
         var registry = BuildRegistry(state);
-        var io = new FakeInputOutput();
-        registry.Execute(new ParsedCommand("go", "east"), state, io); // → bar
-        registry.Execute(new ParsedCommand("go", "east"), state, io); // → lobby
+        state.CurrentRoomId = "lobby";
 
-        var io2 = new FakeInputOutput();
-        registry.Execute(new ParsedCommand("go", "north"), state, io2);
+        var io = new FakeInputOutput();
+        registry.Execute(new ParsedCommand("go", "north"), state, io);
 
         // Should mention lock or required item
-        Assert.True(io2.OutputContains("keycard") || io2.OutputContains("locked") || io2.OutputContains("need"),
-            $"Expected a hint about the locked door but got: {io2.AllOutput}");
+        Assert.True(io.OutputContains("keycard") || io.OutputContains("locked") || io.OutputContains("need"),
+            $"Expected a hint about the locked door but got: {io.AllOutput}");
     }
 
     // ──────────────────────────────────────────────
@@ -161,7 +173,7 @@ public class GameIntegrationTests
     [Fact]
     public void PickingUpKeycard_AddsToInventory()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
@@ -180,7 +192,7 @@ public class GameIntegrationTests
     [Fact]
     public void KeycardTaken_IsRemovedFromRooftop()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
@@ -199,7 +211,7 @@ public class GameIntegrationTests
     [Fact]
     public void Navigation_AlleyToBar_CorrectRoom()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
@@ -211,7 +223,7 @@ public class GameIntegrationTests
     [Fact]
     public void Navigation_BarToRooftop_CorrectRoom()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
@@ -224,7 +236,7 @@ public class GameIntegrationTests
     [Fact]
     public void Navigation_CanReturnToStart()
     {
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
@@ -242,7 +254,7 @@ public class GameIntegrationTests
     public void Quit_DuringPlay_EndsWithHasWonFalse()
     {
         var io = new FakeInputOutput("quit");
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -261,9 +273,11 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput(
             "go east", "go up", "take keycard",
-            "go down", "go east", "use keycard", "go north"
+            "go down", "go west", "go down", "go south", "take cred_chip",
+            "go north", "go north", "go north", "use cred_chip",
+            "go north", "use keycard", "go north"
         );
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -278,7 +292,7 @@ public class GameIntegrationTests
     public void QuittingGame_EngineOutputContainsQuitMessage()
     {
         var io = new FakeInputOutput("quit");
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -297,7 +311,7 @@ public class GameIntegrationTests
     public void EmptyInput_DoesNotCrash()
     {
         var io = new FakeInputOutput("", "  ", "quit");
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -311,7 +325,7 @@ public class GameIntegrationTests
     public void UnknownCommandDuringPlay_DoesNotCrash()
     {
         var io = new FakeInputOutput("fly", "teleport north", "quit");
-        var state = WorldBuilder.Build();
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var engine = new GameEngine(state, registry, io);
 
@@ -325,20 +339,28 @@ public class GameIntegrationTests
     [Fact]
     public void DroppingAndRetakingKeycard_WinConditionStillWorks()
     {
-        // Navigate to rooftop, take keycard, drop it, retake it, then win
-        var state = WorldBuilder.Build();
+        // Navigate to rooftop, take keycard, drop it, retake it, then complete winning path
+        var state = BuildState();
         var registry = BuildRegistry(state);
         var io = new FakeInputOutput();
 
-        registry.Execute(new ParsedCommand("go", "east"), state, io); // → bar
-        registry.Execute(new ParsedCommand("go", "up"), state, io);   // → rooftop
+        registry.Execute(new ParsedCommand("go", "east"), state, io);      // → bar
+        registry.Execute(new ParsedCommand("go", "up"), state, io);        // → rooftop
         registry.Execute(new ParsedCommand("take", "keycard"), state, io);
         registry.Execute(new ParsedCommand("drop", "keycard"), state, io); // drop on rooftop
         registry.Execute(new ParsedCommand("take", "keycard"), state, io); // pick up again
-        registry.Execute(new ParsedCommand("go", "down"), state, io); // → bar
-        registry.Execute(new ParsedCommand("go", "east"), state, io); // → lobby
-        registry.Execute(new ParsedCommand("use", "keycard"), state, io);  // unlock
-        registry.Execute(new ParsedCommand("go", "north"), state, io); // → server
+        registry.Execute(new ParsedCommand("go", "down"), state, io);      // → bar
+        registry.Execute(new ParsedCommand("go", "west"), state, io);      // → alley
+        registry.Execute(new ParsedCommand("go", "down"), state, io);      // → tunnel
+        registry.Execute(new ParsedCommand("go", "south"), state, io);     // → den
+        registry.Execute(new ParsedCommand("take", "cred_chip"), state, io);
+        registry.Execute(new ParsedCommand("go", "north"), state, io);     // → tunnel
+        registry.Execute(new ParsedCommand("go", "north"), state, io);     // → plaza
+        registry.Execute(new ParsedCommand("go", "north"), state, io);     // → checkpoint
+        registry.Execute(new ParsedCommand("use", "cred_chip"), state, io);
+        registry.Execute(new ParsedCommand("go", "north"), state, io);     // → lobby
+        registry.Execute(new ParsedCommand("use", "keycard"), state, io);
+        registry.Execute(new ParsedCommand("go", "north"), state, io);     // → server
 
         Assert.True(state.HasWon, "Should win even after drop/retake cycle.");
     }
