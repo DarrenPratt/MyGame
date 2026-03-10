@@ -12,7 +12,7 @@ public class TakeCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine("Take what?");
+            io.WriteLine(ColorConsole.Error("Take what?"));
             return;
         }
 

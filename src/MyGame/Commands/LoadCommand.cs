@@ -23,6 +23,9 @@ public class LoadCommand : ICommand
         var filename = string.IsNullOrWhiteSpace(command.Noun) ? "savegame.json" : command.Noun.Trim();
         if (!filename.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             filename += ".json";
+        filename = Path.GetFileName(filename);
+        if (string.IsNullOrWhiteSpace(filename))
+            filename = "savegame.json";
 
         var path = Path.Combine(_baseDirectory, filename);
         if (!File.Exists(path))
@@ -42,19 +45,20 @@ public class LoadCommand : ICommand
                 return;
             }
 
-            if (!state.Rooms.ContainsKey(data.CurrentRoomId))
+            if (data.CurrentRoomId is null || !state.Rooms.ContainsKey(data.CurrentRoomId))
             {
                 io.WriteLine("Saved room no longer exists in this world.");
                 return;
             }
 
             state.CurrentRoomId = data.CurrentRoomId;
+
             state.Flags.Clear();
-            foreach (var flag in data.Flags)
+            foreach (var flag in data.Flags ?? [])
                 state.Flags.Add(flag);
 
             state.Inventory.Clear();
-            foreach (var itemId in data.Inventory)
+            foreach (var itemId in data.Inventory ?? [])
             {
                 if (state.ItemCatalog.TryGetValue(itemId, out var item))
                     state.Inventory.Add(item);
@@ -68,5 +72,5 @@ public class LoadCommand : ICommand
         }
     }
 
-    private record SaveData(string CurrentRoomId, List<string> Inventory, List<string> Flags);
+    private record SaveData(string? CurrentRoomId, List<string>? Inventory, List<string>? Flags);
 }

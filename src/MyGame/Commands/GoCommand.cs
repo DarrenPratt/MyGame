@@ -44,6 +44,12 @@ public class GoCommand : ICommand
             return;
         }
 
+        if (!state.Rooms.ContainsKey(exit.TargetRoomId))
+        {
+            io.WriteLine(ColorConsole.Error($"You can't go {direction} — the path leads nowhere. (World error)"));
+            return;
+        }
+
         state.CurrentRoomId = exit.TargetRoomId;
         io.WriteLine($"You move {direction}.");
 
