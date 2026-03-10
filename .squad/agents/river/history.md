@@ -67,6 +67,9 @@
 ### Session 2026-03-10 — PR #20 Review: ColorConsole Themed ANSI Output
 
 **Reviewed PR #20** — "Implement ColorConsole — themed ANSI output" (closes #3)
+### Session 2026-03-10 — PR #21 Review: NarratorEngine Atmospheric Variants
+
+**Reviewed PR #21** — "feat: complete NarratorEngine — atmospheric variant output (#4)"
 
 **Verdict: APPROVED** (submitted as review comment — GitHub prevents self-approval)
 
@@ -83,6 +86,20 @@
 - Silent ignore of `SetConsoleMode` failure is correct (graceful degradation)
 - `Flavor` method defined but not yet called — palette method for future use, not a blocker
 - No dedicated ColorConsole unit tests needed — simple string formatters, covered by transparent ANSI behavior
+- `src/MyGame/Engine/NarratorEngine.cs` — new `GetVariant()` method returning `NarratorVariant?`
+- `src/MyGame/Commands/LookCommand.cs` — uses `Flavor()` for variants, `RoomDescription()` for base
+- `src/MyGame/Content/worlds/neon-ledger.json` — bar room gets unconditional atmospheric variant
+- `src/MyGame.Tests/NarratorEngineTests.cs` — 2 new tests for GetVariant() behavior
+
+**Key findings:**
+- All 166 tests pass (164 existing + 2 new)
+- `GetVariant()` cleanly extracts variant-matching logic, returns null when no match
+- LookCommand correctly branches on variant vs base for color rendering
+- Empty requirements `[]` in JSON = always matches (score 0) — pattern works as designed
+- Higher-specificity variants (e.g. viktor_met with score 1) correctly override atmospheric
+- Atmospheric text is appropriately cyberpunk: neon, chrome bartender, mysterious terminal message
+
+**Pattern observed:** The empty-requirements variant as "default atmospheric" is now an established content pattern. Any room can use this to avoid showing static base descriptions while still allowing flag-conditional overrides.
 
 ## Team Updates
 
