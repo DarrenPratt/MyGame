@@ -12,7 +12,7 @@ public class GameState
     public bool HasLost { get; set; } = false;
     public int DroneThreatLevel { get; set; } = 0;
     public HashSet<string> HighRiskRoomIds { get; init; } = new(StringComparer.OrdinalIgnoreCase) { "plaza", "checkpoint" };
-    public int DroneThreatThreshold { get; init; } = 4;
+    public int DroneThreatThreshold { get; set; } = 4;
     public string? WinRoomId { get; set; } = "server";
 
     private Dictionary<string, Room> _rooms = new();

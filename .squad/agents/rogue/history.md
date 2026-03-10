@@ -29,3 +29,5 @@
 - **2026-03-09 — Johnny's architecture provided the framework:** ICommand pattern, IInputOutput abstraction, and state management design enabled your content layer perfectly. 5-room core world integrated smoothly with your narrative expansion ideas.
 - **2026-03-09 — River completed 114 xUnit tests:** All content flows validated. Tests confirm your narrative progression, item mechanics, and win condition work as designed. Ready for implementation.
 - **2026-03-09 — Judy implemented your content:** Game now playable with your descriptions, room layout, and atmospheric flavor text. All 114 tests passing. Title: "Neon Ledger". Game is complete and ready for players.
+- **2026-03-10 — Johnny filed improvement issues:** #36 (add narrator variants), #37 (repair_kit purpose, flesh corridor). 205 tests passing. Ready for content iteration.
+- **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 3 assigned to Rogue: #45 (missing NPC examine support), #50 (rooms lack atmospheric variants), #54 (unused items repair_kit and flyer). Content expansion backlog created; variants and NPC features high priority.
