@@ -23,6 +23,7 @@ public class GameEngine
     private readonly IInputOutput _io;
     private readonly LoadedWorld? _world;
     private readonly Func<GameState>? _stateFactory;
+    private DroneThreatSystem _droneSystem;
 
     public GameEngine(GameState state, CommandRegistry commands, IInputOutput io, LoadedWorld? world = null, Func<GameState>? stateFactory = null)
     {
@@ -31,6 +32,7 @@ public class GameEngine
         _io = io;
         _world = world;
         _stateFactory = stateFactory;
+        _droneSystem = new DroneThreatSystem(state);
     }
 
     public void Run()
@@ -46,6 +48,7 @@ public class GameEngine
                 if (answer is not null && answer.StartsWith("y", StringComparison.OrdinalIgnoreCase))
                 {
                     _state = _stateFactory();
+                    _droneSystem = new DroneThreatSystem(_state);
                     continue;
                 }
             }
@@ -87,24 +90,14 @@ public class GameEngine
             if (string.IsNullOrEmpty(parsed.Verb))
                 continue;
 
-            var prevRoomId = _state.CurrentRoomId;
             _commands.Execute(parsed, _state, _io);
 
             // Drone threat check — runs after every command
-            if (_state.IsRunning && _state.HighRiskRoomIds.Contains(_state.CurrentRoomId))
+            if (_state.IsRunning && _droneSystem.IsHighRiskRoom())
             {
-                _state.DroneThreatLevel++;
-                if (_state.DroneThreatLevel == 1)
-                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning1));
-                else if (_state.DroneThreatLevel == 2)
-                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning2));
-                else if (_state.DroneThreatLevel == 3)
-                    _io.WriteLine(ColorConsole.Error(GameMessages.Drone.Warning3));
-                else if (_state.DroneThreatLevel >= _state.DroneThreatThreshold)
-                {
-                    _state.HasLost = true;
-                    _state.IsRunning = false;
-                }
+                var warning = _droneSystem.Increment();
+                if (warning is not null)
+                    _io.WriteLine(ColorConsole.Error(warning));
             }
         }
 
