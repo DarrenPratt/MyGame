@@ -633,4 +633,32 @@ Migrate `ParserTests.cs` to call `CommandParser.Parse()` directly first, then de
 
 ---
 
-**Last Updated:** 2026-03-10T19:35:00Z
+## Duplicate Item Lookup Code — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Complete  
+**Scope:** Issue #31 — Duplicate item lookup code across ExamineCommand and LookCommand  
+**PR:** #62
+
+### What Was Done
+
+`LookCommand` contained a private `FindItem(string noun, GameState state)` method that was a duplicate of `GameStateExtensions.FindItem()` already in use by `ExamineCommand` (from Issue #33).
+
+**Changes to `src/MyGame/Commands/LookCommand.cs`:**
+- Line 16: `FindItem(command.Noun, state)` → `state.FindItem(command.Noun)`
+- Lines 74–81: Private `FindItem` method removed (8 lines deleted)
+- `using MyGame.Models;` retained — `Room` type still referenced
+
+Net diff: 1 insertion, 9 deletions.
+
+### Test Results
+
+**Total: 227 tests pass** (no regressions)
+
+### Pattern Observed
+
+When `GameStateExtensions` was introduced (Issue #33), `ExamineCommand` was migrated immediately but `LookCommand` was missed. **Recommendation:** Future shared-utility extractions should include a grep over all command files before closing the issue.
+
+---
+
+**Last Updated:** 2026-03-10T19:41:00Z

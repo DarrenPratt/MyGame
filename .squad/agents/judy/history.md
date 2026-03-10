@@ -141,6 +141,13 @@ All 227 tests pass. `Parser.cs` is deleted. Decision merged into decisions.md.
 - **No other save-related artifacts found**: No `*.save` or `*.sav` files present. No additional entries needed.
 - **Committed on current branch** (`squad/46-viktor-met-flag`) with no new branch created.
 
+### Session 15 — Issue #31: Remove Duplicate FindItem from LookCommand
+
+- **Change**: Replaced the call to `LookCommand`'s private `FindItem(noun, state)` with `state.FindItem(noun)` (the shared `GameStateExtensions` extension method), then deleted the private method (8 lines removed).
+- **`using MyGame.Models;` retained**: `Room` is still referenced by the `DescribeRoom` overloads — the import was not unused.
+- **Pattern**: When `GameStateExtensions.FindItem()` was introduced (Issue #33), `ExamineCommand` was migrated but `LookCommand` was missed. Whenever a shared utility is added to replace duplicates, grep all command files for the old pattern to ensure full coverage in the same PR.
+- **PR**: #62 on DarrenPratt/MyGame. 227 tests pass unchanged.
+
 ### Session 13 — Parallel Refactoring Work (2026-03-10T19:25:00Z)
 
 - **Issue #34 — GameMessages String Extraction**: Created `GameMessages.cs` (15 nested static classes, 50+ const strings) centralizing all player-facing narrative from `GameEngine.cs` and 10 command files. Consolidation pattern applied: multi-line prose from sequential `WriteLine` calls → single const with `\n` → split via `SplitLines`. Pure refactor, 227 tests pass.
