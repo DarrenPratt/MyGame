@@ -67,7 +67,25 @@ public class GameEngine
             if (string.IsNullOrEmpty(parsed.Verb))
                 continue;
 
+            var prevRoomId = _state.CurrentRoomId;
             _commands.Execute(parsed, _state, _io);
+
+            // Drone threat check — runs after every command
+            if (_state.IsRunning && _state.HighRiskRoomIds.Contains(_state.CurrentRoomId))
+            {
+                _state.DroneThreatLevel++;
+                if (_state.DroneThreatLevel == 1)
+                    _io.WriteLine(ColorConsole.Error("A drone sweeps overhead — its scanner lights paint the street."));
+                else if (_state.DroneThreatLevel == 2)
+                    _io.WriteLine(ColorConsole.Error("Drone targeting systems are locking on. You need to move. Now."));
+                else if (_state.DroneThreatLevel == 3)
+                    _io.WriteLine(ColorConsole.Error("CRITICAL: Drone lock acquired. Leave this zone immediately."));
+                else if (_state.DroneThreatLevel >= _state.DroneThreatThreshold)
+                {
+                    _state.HasLost = true;
+                    _state.IsRunning = false;
+                }
+            }
         }
 
         _io.WriteLine("");
@@ -88,6 +106,23 @@ public class GameEngine
 
             _io.WriteLine("");
             _io.WriteLine(ColorConsole.Magenta("*** YOU WIN. The neon city is yours. ***"));
+        }
+        else if (_state.HasLost)
+        {
+            if (!string.IsNullOrWhiteSpace(_world?.LoseMessage))
+            {
+                foreach (var line in SplitLines(_world.LoseMessage))
+                    _io.WriteLine(line);
+            }
+            else
+            {
+                _io.WriteLine("Red warning lights flood the street. SynthCorp security drones converge on your position,");
+                _io.WriteLine("their scanner locks painting you in deadly light. Your wrist terminal screams alerts.");
+                _io.WriteLine("You've lost the game—and possibly much worse. The last thing you see is a drone's");
+                _io.WriteLine("targeting reticle zeroing in. SynthCorp doesn't take data theft lightly.");
+            }
+            _io.WriteLine("");
+            _io.WriteLine(ColorConsole.Error("*** CAPTURED. SynthCorp wins this round. ***"));
         }
         else
         {

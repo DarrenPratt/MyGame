@@ -49,3 +49,19 @@
 - **Judy's PR #20 merged successfully**: ColorConsole semantic methods and Windows ANSI support now in main. All 164 tests pass.
 - **Decisions documented**: ColorConsole design recorded in .squad/decisions.md with rationale for semantic palette, P/Invoke approach, and test compatibility.
 - **Orchestration completed**: Session logs, history, and decision inbox processed. PR ready for next phase.
+
+### Session 6 - Remove WorldBuilder Dead Code (Issue #6)
+
+- **WorldBuilder.cs deleted**: The Build() fallback in Program.cs was unreachable - neon-ledger.json is always present in the repo. Deleted the file entirely.
+- **Program.cs simplified**: Replaced if/else (JSON vs WorldBuilder) with a clean FileNotFoundException guard. using MyGame.Content removed (namespace no longer exists).
+- **Test suite migrated**: GameWorldTests and GameIntegrationTests updated to load the world from neon-ledger.json via JsonWorldLoader. No tests were deleted - all 168 pass.
+- **World map delta discovered**: JSON world has bar-east-plaza (not lobby) and lobby-west-corridor (not bar). Winning path requires both keycard and cred_chip. Integration test navigation paths updated accordingly.
+- **PR**: #23 on DarrenPratt/MyGame
+
+### Session 7 - Scribe Orchestration (2026-03-10T11:30:00Z)
+
+- **Orchestration logs created**: Recorded Judy's WorldBuilder removal and Coordinator's PR #22 closure
+- **Session log written**: Brief summary of WorldBuilder deletion and test migration (168 passing)
+- **Decisions merged**: Inbox decision on WorldBuilder removal merged into decisions.md with full rationale and impact analysis
+- **Judy's history updated**: Added Session 7 entry noting WorldBuilder removal, test count now 168
+
