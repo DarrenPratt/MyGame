@@ -47,6 +47,11 @@
       "description": "A cramped hole-in-the-wall bar wedged between two corporate transit towers. Holographic drink menus flicker across scratched tables, casting sickly blue and pink light across everything. The bartender—a chrome-jawed synth with dead eyes—polishes glasses that never quite get clean. Rain drums against reinforced windows overlooking the street below.",
       "narratorVariants": [
         {
+          "requiredFlags": [],
+          "requiredInventoryItems": [],
+          "description": "Neon flickers across the bar. Holographic drink menus cast sickly pink light on empty glasses. Someone left a message on the terminal—your name isn't on it, but it might as well be. The chrome-jawed synth bartender watches you without watching you."
+        },
+        {
           "requiredFlags": ["viktor_met"],
           "requiredInventoryItems": [],
           "description": "Viktor works the bar tonight, same as always. His chrome forearms catch the neon light as he pours. You know he could help, but he'll want to know what you're really after. The rooftop access is up those back stairs. East leads to the corporate plaza."
