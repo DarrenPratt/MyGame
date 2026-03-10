@@ -208,6 +208,77 @@ public class NarratorEngineTests
     }
 
     [Fact]
+    public void GetVariant_BarRoom_HasAtmosphericVariant_ReturnsItWhenNoFlagsSet()
+    {
+        // Arrange — simulate bar room with both its variants
+        var room = new Room
+        {
+            Id = "bar",
+            Name = "The Byte Bar",
+            Description = "Base description.",
+            NarratorVariants = new()
+            {
+                new NarratorVariant
+                {
+                    RequiredFlags = new(),
+                    RequiredInventoryItems = new(),
+                    Description = "Neon flickers across the bar."
+                },
+                new NarratorVariant
+                {
+                    RequiredFlags = new() { "viktor_met" },
+                    RequiredInventoryItems = new(),
+                    Description = "Viktor works the bar tonight."
+                }
+            }
+        };
+        var state = WorldFactory.SingleRoomState();
+
+        // Act — no flags set, the unconditional atmospheric variant should win
+        var variant = NarratorEngine.GetVariant(room, state);
+
+        // Assert
+        Assert.NotNull(variant);
+        Assert.Equal("Neon flickers across the bar.", variant.Description);
+    }
+
+    [Fact]
+    public void GetVariant_BarRoom_ViktorMetFlag_ReturnsViktorVariant()
+    {
+        // Arrange — simulate bar room with both its variants
+        var room = new Room
+        {
+            Id = "bar",
+            Name = "The Byte Bar",
+            Description = "Base description.",
+            NarratorVariants = new()
+            {
+                new NarratorVariant
+                {
+                    RequiredFlags = new(),
+                    RequiredInventoryItems = new(),
+                    Description = "Neon flickers across the bar."
+                },
+                new NarratorVariant
+                {
+                    RequiredFlags = new() { "viktor_met" },
+                    RequiredInventoryItems = new(),
+                    Description = "Viktor works the bar tonight."
+                }
+            }
+        };
+        var state = WorldFactory.SingleRoomState();
+        state.Flags.Add("viktor_met");
+
+        // Act — viktor_met flag raises specificity score, that variant should win
+        var variant = NarratorEngine.GetVariant(room, state);
+
+        // Assert
+        Assert.NotNull(variant);
+        Assert.Equal("Viktor works the bar tonight.", variant.Description);
+    }
+
+    [Fact]
     public void GetDescription_VariantRequiresTwoFlags_OnlyOneSet_ReturnsBaseDescription()
     {
         // Arrange
