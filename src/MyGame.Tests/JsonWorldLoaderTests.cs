@@ -1,4 +1,4 @@
-﻿using MyGame.Engine;
+using MyGame.Engine;
 using MyGame.Models;
 using System;
 using System.IO;
@@ -385,6 +385,9 @@ public class JsonWorldLoaderTests : IDisposable
         // Assert
         Assert.Equal("server", state.WinRoomId);
     }
+<<<<<<< HEAD
+=======
+
     // ── Metadata forwarding ───────────────────────────────────────────────
 
     [Fact]
@@ -702,6 +705,10 @@ public class JsonWorldLoaderTests : IDisposable
 
         Assert.Throws<InvalidOperationException>(() => loader.Load(path));
     }
+
+<<<<<<< HEAD
+=======
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private static string MinimalJsonWith(string extra) => $$"""
         {
