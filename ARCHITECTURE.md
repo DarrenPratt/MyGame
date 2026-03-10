@@ -292,10 +292,49 @@ public class GameEngine
 }
 ```
 
-**Drone Threat System:**
-- Each turn in "plaza" or "checkpoint" increments threat counter
-- At threshold (default 4), `HasLost = true`, game ends
-- Save/load persists threat level
+### DroneThreatSystem
+
+Encapsulates **drone surveillance mechanics**. Extracted from GameEngine for clarity.
+
+```csharp
+public class DroneThreatSystem
+{
+    private readonly GameState _state;
+
+    public DroneThreatSystem(GameState state) => _state = state;
+
+    public bool IsHighRiskRoom() =>
+        _state.HighRiskRoomIds.Contains(_state.CurrentRoomId);
+
+    public string? Increment()
+    {
+        _state.DroneThreatLevel++;
+        
+        if (_state.DroneThreatLevel >= _state.DroneThreatThreshold)
+        {
+            _state.HasLost = true;
+            _state.IsRunning = false;
+            return null;
+        }
+
+        return _state.DroneThreatLevel switch
+        {
+            1 => GameMessages.Drone.Warning1,
+            2 => GameMessages.Drone.Warning2,
+            3 => GameMessages.Drone.Warning3,
+            _ => null
+        };
+    }
+
+    public void Reset() => _state.DroneThreatLevel = 0;
+}
+```
+
+**Key behaviors:**
+- `IsHighRiskRoom()` checks if current room is in `HighRiskRoomIds` (e.g., "plaza", "checkpoint")
+- `Increment()` increments threat level, returns warning message at levels 1–3, sets `HasLost` at threshold
+- `Reset()` zeros the threat level (called on game restart via `stateFactory`)
+- Threat level and threshold are stored on `GameState` for save/load compatibility
 
 ### NarratorEngine
 
