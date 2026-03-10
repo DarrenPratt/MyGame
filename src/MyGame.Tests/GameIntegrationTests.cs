@@ -1,4 +1,4 @@
-using MyGame.Commands;
+﻿using MyGame.Commands;
 using MyGame.Engine;
 using MyGame.Tests.Helpers;
 using Xunit;
@@ -29,31 +29,17 @@ public class GameIntegrationTests
     private static GameEngine BuildEngine(FakeInputOutput io)
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         return new GameEngine(state, registry, io);
     }
 
     private static (GameEngine engine, GameState state, CommandRegistry registry) BuildComponents()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
         var engine = new GameEngine(state, registry, io);
         return (engine, state, registry);
-    }
-
-    private static CommandRegistry BuildRegistry(GameState state)
-    {
-        var registry = new CommandRegistry();
-        registry.Register(new LookCommand());
-        registry.Register(new GoCommand());
-        registry.Register(new TakeCommand());
-        registry.Register(new DropCommand());
-        registry.Register(new InventoryCommand());
-        registry.Register(new UseCommand());
-        registry.Register(new HelpCommand(registry));
-        registry.Register(new QuitCommand());
-        return registry;
     }
 
     // ──────────────────────────────────────────────
@@ -82,7 +68,7 @@ public class GameIntegrationTests
             "go north"        // lobby → server (WIN — engine stops here)
         );
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         // Act
@@ -102,7 +88,7 @@ public class GameIntegrationTests
             "go north", "use keycard", "go north"
         );
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -120,7 +106,7 @@ public class GameIntegrationTests
             "go north", "use keycard", "go north"
         );
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -137,7 +123,7 @@ public class GameIntegrationTests
     {
         // Arrange — place player directly in lobby without keycard
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         state.CurrentRoomId = "lobby";
 
         var io = new FakeInputOutput();
@@ -155,7 +141,7 @@ public class GameIntegrationTests
     {
         // Place player directly in lobby without keycard
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         state.CurrentRoomId = "lobby";
 
         var io = new FakeInputOutput();
@@ -174,7 +160,7 @@ public class GameIntegrationTests
     public void PickingUpKeycard_AddsToInventory()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         // Navigate to rooftop
@@ -193,7 +179,7 @@ public class GameIntegrationTests
     public void KeycardTaken_IsRemovedFromRooftop()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         registry.Execute(new ParsedCommand("go", "east"), state, io);
@@ -212,7 +198,7 @@ public class GameIntegrationTests
     public void Navigation_AlleyToBar_CorrectRoom()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         registry.Execute(new ParsedCommand("go", "east"), state, io);
@@ -224,7 +210,7 @@ public class GameIntegrationTests
     public void Navigation_BarToRooftop_CorrectRoom()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         registry.Execute(new ParsedCommand("go", "east"), state, io);
@@ -237,7 +223,7 @@ public class GameIntegrationTests
     public void Navigation_CanReturnToStart()
     {
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         registry.Execute(new ParsedCommand("go", "east"), state, io); // → bar
@@ -255,7 +241,7 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput("quit");
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -278,7 +264,7 @@ public class GameIntegrationTests
             "go north", "use keycard", "go north"
         );
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -289,11 +275,32 @@ public class GameIntegrationTests
     }
 
     [Fact]
+    public void WinningPath_UsesCustomWinMessageFromJson()
+    {
+        var io = new FakeInputOutput(
+            "go east", "go up", "take keycard",
+            "go down", "go west", "go down", "go south", "take cred_chip",
+            "go north", "go north", "go north", "use cred_chip",
+            "go north", "use keycard", "go north"
+        );
+        var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
+        var world = new JsonWorldLoader().Load(worldPath);
+        var registry = RegistryFactory.BuildRegistry();
+        var engine = new GameEngine(world.State, registry, io, world);
+
+        engine.Run();
+
+        // neon-ledger.json has a custom winMessage — engine should display it, not the default
+        Assert.True(io.OutputContains("burning in your pocket") || io.OutputContains("Years of dead contacts"),
+            $"Expected custom JSON win message in output. Got:\n{io.AllOutput}");
+    }
+
+    [Fact]
     public void QuittingGame_EngineOutputContainsQuitMessage()
     {
         var io = new FakeInputOutput("quit");
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -312,7 +319,7 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput("", "  ", "quit");
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         // Should complete without throwing
@@ -326,7 +333,7 @@ public class GameIntegrationTests
     {
         var io = new FakeInputOutput("fly", "teleport north", "quit");
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();
@@ -341,7 +348,7 @@ public class GameIntegrationTests
     {
         // Navigate to rooftop, take keycard, drop it, retake it, then complete winning path
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput();
 
         registry.Execute(new ParsedCommand("go", "east"), state, io);      // → bar
