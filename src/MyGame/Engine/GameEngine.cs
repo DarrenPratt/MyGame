@@ -18,20 +18,43 @@ public class ConsoleIO : IInputOutput
 
 public class GameEngine
 {
-    private readonly GameState _state;
+    private GameState _state;
     private readonly CommandRegistry _commands;
     private readonly IInputOutput _io;
     private readonly LoadedWorld? _world;
+    private readonly Func<GameState>? _stateFactory;
 
-    public GameEngine(GameState state, CommandRegistry commands, IInputOutput io, LoadedWorld? world = null)
+    public GameEngine(GameState state, CommandRegistry commands, IInputOutput io, LoadedWorld? world = null, Func<GameState>? stateFactory = null)
     {
         _state = state;
         _commands = commands;
         _io = io;
         _world = world;
+        _stateFactory = stateFactory;
     }
 
     public void Run()
+    {
+        while (true)
+        {
+            RunSession();
+
+            if (_state.HasLost && _stateFactory is not null)
+            {
+                _io.Write(ColorConsole.Yellow("\nTry again? (yes/no) "));
+                var answer = _io.ReadLine();
+                if (answer is not null && answer.StartsWith("y", StringComparison.OrdinalIgnoreCase))
+                {
+                    _state = _stateFactory();
+                    continue;
+                }
+            }
+
+            break;
+        }
+    }
+
+    private void RunSession()
     {
         var title = _world?.Title ?? "N E O N   L E D G E R";
         var subtitle = _world?.Subtitle ?? "A Cyberpunk Text Adventure";

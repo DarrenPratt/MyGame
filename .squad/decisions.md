@@ -65,6 +65,74 @@ Implementation verified:
 - Not all commands updated (intentional — future PRs to follow pattern)
 - ANSI codes transparent to test assertions
 
+### Try-Again Restart Feature (Issue #29) — Judy
+
+**Date:** 2026-03-10  
+**Author:** Judy (C# Developer)
+
+## Context
+
+When the player's drone threat level exceeds the threshold, `HasLost` is set to `true` and the game loop exits. Previously the engine returned immediately, with no way to restart without re-running the process.
+
+## Decision
+
+Introduce an optional `Func<GameState>? stateFactory` parameter to `GameEngine`'s constructor. The factory is a delegate that produces a fresh `GameState` on demand. When the player dies and the factory is present, the engine prompts for a retry and — if confirmed — calls `_state = _stateFactory()` to replace the entire game state before looping into a new session.
+
+## Design Rationale
+
+- **Delegate over interface**: A `Func<GameState>` is the simplest possible contract. No new interface, no new class — just a lambda at the call site.
+- **Optional with `null` default**: Existing tests construct `GameEngine` without a factory and must not regress. `null` means "exit on death", which preserves the prior behaviour exactly.
+- **Factory owns construction**: `Program.cs` provides `() => new JsonWorldLoader().Load(worldPath).State`. The engine never needs to know how the world is loaded — it only knows how to run a session.
+- **`RunSession()` handles one full game**: Banner, intro, game loop, end message — all encapsulated. Calling it again from the retry loop gives the player an identical fresh-start experience.
+- **Prompt style**: `ColorConsole.Yellow()` used for the "Try again?" prompt, consistent with the cyberpunk colour palette (yellow = decision/choice).
+
+## Consequences
+
+- `_state` field changed from `readonly` to mutable — intentional, required for in-place replacement.
+- `Run()` now owns the outer retry loop; `RunSession()` owns a single game lifetime.
+- No change to any test setup code — all 205 tests pass (199 pre-existing + 6 new).
+
+## Files Changed
+
+- `src/MyGame/Engine/GameEngine.cs` — factory field, mutable state, `Run()` retry loop, `RunSession()` extraction
+- `src/MyGame/Program.cs` — factory lambda passed to `GameEngine` constructor
+
+### Test Coverage: Try-Again Restart (Issue #29) — River
+
+**Author:** River (Tester)  
+**Date:** 2026-03-10
+
+## Decision: 6 Tests Cover the Restart Feature
+
+### What Was Tested
+
+Six focused tests in `src/MyGame.Tests/TryAgainTests.cs`:
+
+| Test | What it guards |
+|---|---|
+| `Death_WithFactory_ShowsTryAgainPrompt` | Prompt appears on death when factory provided |
+| `Death_WithFactory_AnswerNo_ExitsCleanly` | "no" answer exits cleanly with correct state flags |
+| `Death_WithFactory_AnswerYes_RestartsGame` | "yes" answer restarts the full session (two banners in output) |
+| `Death_WithoutFactory_NoTryAgainPrompt` | No factory = no prompt (backward compatibility) |
+| `Win_DoesNotShowTryAgainPrompt` | Win path never shows prompt, even with factory |
+| `Quit_DoesNotShowTryAgainPrompt` | Voluntary quit never shows prompt, even with factory |
+
+### What Was Not Tested
+
+- **Multiple restarts in sequence** (die → yes → die → yes → no): considered low-risk; the retry loop is bounded by user input and uses the same code path on every cycle.
+- **Factory throwing an exception**: error handling in the factory is Judy's concern; no behavior is specified for this case.
+- **"YES" / "Yes" / "Y" casing variants**: the implementation uses `StartsWith("y", OrdinalIgnoreCase)` and the existing parser tests cover similar case-insensitive input patterns; not duplicated here.
+
+### Design Choices
+
+- **`DeathInputs` static array** shared across all death-triggering tests — single source of truth for the plaza death sequence.
+- **Banner line count** used to detect session restart — counts lines containing "╔" (unique to the title banner). This is output-observable without requiring access to the engine's internal `_state` after factory reset.
+- **Named parameter** `stateFactory: factory` used at call sites to skip the optional `world` parameter cleanly, matching the test idiom of omitting world for integration tests that don't need world metadata.
+
+### Status
+
+All 205 tests pass (199 pre-existing + 6 new).
+
 ## Governance
 
 - All meaningful changes require team consensus

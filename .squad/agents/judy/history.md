@@ -65,3 +65,17 @@
 - **Decisions merged**: Inbox decision on WorldBuilder removal merged into decisions.md with full rationale and impact analysis
 - **Judy's history updated**: Added Session 7 entry noting WorldBuilder removal, test count now 168
 
+### Session 8 — Try-Again on Death (Issue #29)
+
+- **`Func<GameState>?` factory pattern**: Added optional `stateFactory` parameter to `GameEngine` constructor. When provided and player dies, a fresh `GameState` is created by invoking the factory — no shared state carries over.
+- **`Run()` wraps `RunSession()`**: Extracted the entire single-session game loop into `private RunSession()`. `Run()` owns the retry loop; `RunSession()` owns one game from banner to end message.
+- **Restart shows full intro**: Because `RunSession()` includes the banner and initial look, the player gets a clean fresh start — exactly the same experience as a first launch.
+- **"Try again?" prompt only on death**: Win and voluntary quit exit cleanly without prompting. Only `HasLost == true` with a non-null factory triggers the prompt.
+- **`ColorConsole.Yellow()`** used for the prompt, consistent with the cyberpunk theme palette.
+- **Backward compatibility preserved**: All existing tests construct `GameEngine` without a factory (`stateFactory = null` default). 199 tests pass unchanged.
+- **`_state` is no longer `readonly`**: Required so the retry loop can replace it with a fresh instance from the factory.
+
+## Team Updates
+
+- **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
+
