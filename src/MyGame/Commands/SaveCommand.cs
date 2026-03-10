@@ -28,7 +28,19 @@ public class SaveCommand : ICommand
             filename = "savegame.json";
 
         var path = Path.Combine(_baseDirectory, filename);
-        var data = new SaveData(state.CurrentRoomId, state.Inventory.Select(item => item.Id).ToList(), state.Flags.ToList());
+        var exitLockStates = state.Rooms
+            .Where(kvp => kvp.Value.Exits.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Exits.ToDictionary(e => e.Key, e => e.Value.IsLocked));
+
+        var data = new SaveData(
+            state.CurrentRoomId,
+            state.Inventory.Select(item => item.Id).ToList(),
+            state.Flags.ToList(),
+            state.DroneThreatLevel,
+            state.DroneThreatThreshold,
+            exitLockStates);
         var options = new JsonSerializerOptions { WriteIndented = true };
 
         try
@@ -43,5 +55,11 @@ public class SaveCommand : ICommand
         }
     }
 
-    private record SaveData(string CurrentRoomId, List<string> Inventory, List<string> Flags);
+    private record SaveData(
+        string CurrentRoomId,
+        List<string> Inventory,
+        List<string> Flags,
+        int DroneThreatLevel,
+        int DroneThreatThreshold,
+        Dictionary<string, Dictionary<string, bool>> ExitLockStates);
 }
