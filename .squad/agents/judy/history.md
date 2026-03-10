@@ -100,6 +100,15 @@
 - **Decisions merged**: All four inbox decision files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md; inbox files deleted
 - **Agent histories updated**: Judy and River histories append with session 11 summaries
 
+### Session 12 — Extract Hardcoded Strings to GameMessages (Issue #34)
+
+- **`GameMessages.cs` created** at `src/MyGame/Engine/GameMessages.cs`: one static class, twelve nested static classes, all `public const string` members.
+- **Strings extracted from `GameEngine.cs`**: default title/subtitle/introText, `"\n> "` prompt, `"\nTry again? (yes/no) "` retry prompt, all three drone warning messages, win/lose default narrative blocks (consolidated from separate `_io.WriteLine` calls into single const strings split via `SplitLines`), and win/lose/quit banners.
+- **Strings extracted from command files**: `GoCommand` (no-direction error, "The way is locked.", server-room win lines), `TakeCommand` (take-what error, data_chip flavour line), `UseCommand` (use-what error), `LookCommand` ("Items here:", "You see here:", "Exits:"), `HelpCommand` (header, directions footer), `QuitCommand` ("Jacking out…"), `TalkCommand` ("Talk to whom?", end-conversation, goodbye, dialogue prompt `"> "`), `DropCommand` (drop-what), `ExamineCommand` (examine-what), `InventoryCommand` (empty/header).
+- **Grouping**: `Defaults`, `Prompts`, `Drone`, `Win`, `Lose`, `Quit`, `Go`, `Take`, `Use`, `Look`, `Help`, `Drop`, `Examine`, `Inventory`, `Talk`.
+- **All 227 tests pass** after the refactor — pure behaviour-preserving change.
+- **Pattern noted**: multi-line prose previously written as multiple consecutive `_io.WriteLine` calls — consolidated into single const strings using `\n`, then split via the existing `SplitLines` helper. Consistent with how JSON world win/lose messages are already handled.
+
 ### Session 12 — FindItem Deduplication (Issue #33)
 
 - **`GameStateExtensions.cs` created in `MyGame.Engine`**: Three public extension methods on `GameState` — `FindItem(noun)` (room then inventory), `FindRoomItem(noun)` (room only), `FindInventoryItem(noun)` (inventory only). All share a private `MatchesNoun` predicate (exact ID or partial name, case-insensitive).
