@@ -50,6 +50,8 @@ public class TalkCommand : ICommand
         while (true)
         {
             io.WriteLine($"{ColorConsole.Yellow(npc.Name)}: {current.Text}");
+            if (current.SetsFlag is not null)
+                state.Flags.Add(current.SetsFlag);
 
             if (current.Responses.Count == 0)
                 return;

@@ -12,6 +12,7 @@ public class DialogueNode
 {
     public required string Id { get; init; }
     public required string Text { get; init; }
+    public string? SetsFlag { get; init; }
     public List<DialogueResponse> Responses { get; init; } = new();
 }
 
