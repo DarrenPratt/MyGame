@@ -23,6 +23,9 @@ public class SaveCommand : ICommand
         var filename = string.IsNullOrWhiteSpace(command.Noun) ? "savegame.json" : command.Noun.Trim();
         if (!filename.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             filename += ".json";
+        filename = Path.GetFileName(filename);
+        if (string.IsNullOrWhiteSpace(filename))
+            filename = "savegame.json";
 
         var path = Path.Combine(_baseDirectory, filename);
         var data = new SaveData(state.CurrentRoomId, state.Inventory.Select(item => item.Id).ToList(), state.Flags.ToList());
