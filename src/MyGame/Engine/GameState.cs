@@ -13,6 +13,7 @@ public class GameState
     public int DroneThreatLevel { get; set; } = 0;
     public HashSet<string> HighRiskRoomIds { get; init; } = new(StringComparer.OrdinalIgnoreCase) { "plaza", "checkpoint" };
     public int DroneThreatThreshold { get; set; } = 4;
+    public int SafeRoomMoveCount { get; set; } = 0;
     public string? WinRoomId { get; set; } = "server";
 
     private Dictionary<string, Room> _rooms = new();

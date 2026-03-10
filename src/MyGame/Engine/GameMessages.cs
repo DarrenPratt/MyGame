@@ -27,6 +27,8 @@ public static class GameMessages
         public const string Warning1 = "A drone sweeps overhead — its scanner lights paint the street.";
         public const string Warning2 = "Drone targeting systems are locking on. You need to move. Now.";
         public const string Warning3 = "CRITICAL: Drone lock acquired. Leave this zone immediately.";
+        public const string Decay = "The drones move on. Heat dropping — you're less visible now.";
+        public const string Clear = "You're in the clear. Drone threat eliminated — for now.";
     }
 
     public static class Win

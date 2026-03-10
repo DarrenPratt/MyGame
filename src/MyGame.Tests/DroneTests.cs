@@ -141,20 +141,21 @@ public class DroneTests
     public void DroneThreat_MovingToSafeRoom_StopsCounting()
     {
         // After 2 turns in plaza, retreating to tunnel (safe) prevents further accumulation.
+        // After 3 safe-room moves, decay fires once: 2 → 1.
         var (engine, state) = BuildEngineWithInputs(
-            "go down",   // alley → tunnel
-            "go north",  // tunnel → plaza (DroneThreatLevel = 1)
+            "go down",   // alley → tunnel (safe, SafeCount=1)
+            "go north",  // tunnel → plaza (high-risk: DroneThreatLevel = 1, SafeCount reset)
             "look",      // plaza (DroneThreatLevel = 2)
-            "go south",  // plaza → tunnel (safe — no increment)
-            "look",      // tunnel (safe — no increment)
-            "look",      // tunnel (safe — no increment)
+            "go south",  // plaza → tunnel (safe, SafeCount=1)
+            "look",      // tunnel (safe, SafeCount=2)
+            "look",      // tunnel (safe, SafeCount=3 → decay: DroneThreatLevel = 1)
             "quit"
         );
 
         engine.Run();
 
         Assert.False(state.HasLost, "Commands in a safe room should not increment the threat level.");
-        Assert.Equal(2, state.DroneThreatLevel);
+        Assert.Equal(1, state.DroneThreatLevel);  // Decayed once: 2 → 1
     }
 
     // ──────────────────────────────────────────────
