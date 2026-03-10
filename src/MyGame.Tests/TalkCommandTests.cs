@@ -196,4 +196,137 @@ public class TalkCommandTests
         // Assert
         Assert.True(io.OutputContains("Hello, stranger"));
     }
+
+    [Fact]
+    public void Execute_DialogueNodeWithSetsFlag_SetsFlagOnGameState()
+    {
+        // Arrange
+        var state = WorldFactory.SingleRoomState();
+        var npc = new Npc
+        {
+            Id = "informant",
+            Name = "Informant",
+            Description = "A contact with useful intel.",
+            Dialogue = new()
+            {
+                new DialogueNode
+                {
+                    Id = "start",
+                    Text = "Meet me at the checkpoint at midnight.",
+                    SetsFlag = "informant_tipped_off",
+                    Responses = new()
+                }
+            }
+        };
+        state.CurrentRoom.Npcs.Add(npc);
+        var io = new FakeInputOutput();
+        var cmd = new TalkCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("talk", "informant"), state, io);
+
+        // Assert
+        Assert.Contains("informant_tipped_off", state.Flags);
+    }
+
+    [Fact]
+    public void Execute_DialogueNodeWithoutSetsFlag_DoesNotAddExtraFlag()
+    {
+        // Arrange
+        var state = WorldFactory.SingleRoomState();
+        var npc = CreateTestNpc("viktor", "Viktor");
+        state.CurrentRoom.Npcs.Add(npc);
+        var io = new FakeInputOutput();
+        var cmd = new TalkCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("talk", "viktor"), state, io);
+
+        // Assert: only the _met flag should be set, no extra flags
+        Assert.Contains("viktor_met", state.Flags);
+        Assert.Single(state.Flags);
+    }
+
+    [Fact]
+    public void Execute_MultiNodeDialogue_SetsFlag_OnlyWhenNodeReached()
+    {
+        // Arrange: first node has no flag, second node sets a flag
+        var state = WorldFactory.SingleRoomState();
+        var npc = new Npc
+        {
+            Id = "contact",
+            Name = "Contact",
+            Description = "A street contact.",
+            Dialogue = new()
+            {
+                new DialogueNode
+                {
+                    Id = "start",
+                    Text = "Who are you?",
+                    Responses = new()
+                    {
+                        new DialogueResponse { Text = "A runner.", NextNodeId = "reveal" }
+                    }
+                },
+                new DialogueNode
+                {
+                    Id = "reveal",
+                    Text = "Then I'll tell you about the door.",
+                    SetsFlag = "contact_revealed_door",
+                    Responses = new()
+                }
+            }
+        };
+        state.CurrentRoom.Npcs.Add(npc);
+        var io = new FakeInputOutput("1"); // choose first option to advance
+        var cmd = new TalkCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("talk", "contact"), state, io);
+
+        // Assert: flag only set because we reached the second node
+        Assert.Contains("contact_revealed_door", state.Flags);
+    }
+
+    [Fact]
+    public void Execute_MultiNodeDialogue_FlagNotSet_WhenNodeNotReached()
+    {
+        // Arrange: two responses; second exits before flag node
+        var state = WorldFactory.SingleRoomState();
+        var npc = new Npc
+        {
+            Id = "contact",
+            Name = "Contact",
+            Description = "A street contact.",
+            Dialogue = new()
+            {
+                new DialogueNode
+                {
+                    Id = "start",
+                    Text = "Who are you?",
+                    Responses = new()
+                    {
+                        new DialogueResponse { Text = "A runner.", NextNodeId = "reveal" },
+                        new DialogueResponse { Text = "Nobody.", NextNodeId = null }
+                    }
+                },
+                new DialogueNode
+                {
+                    Id = "reveal",
+                    Text = "Then I'll tell you about the door.",
+                    SetsFlag = "contact_revealed_door",
+                    Responses = new()
+                }
+            }
+        };
+        state.CurrentRoom.Npcs.Add(npc);
+        var io = new FakeInputOutput("2"); // choose "Nobody." — exits without reaching reveal
+        var cmd = new TalkCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("talk", "contact"), state, io);
+
+        // Assert: flag NOT set because we never reached the second node
+        Assert.DoesNotContain("contact_revealed_door", state.Flags);
+    }
 }

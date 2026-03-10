@@ -177,6 +177,13 @@
       "narratorVariants": [
         {
           "requiredFlags": [
+            "viktor_gave_intel"
+          ],
+          "requiredInventoryItems": [],
+          "description": "Viktor's tip resonates as you face the checkpoint: these guards are greedy corp-sec with a price. You study them differently now, watching for weakness. The right leverage could walk you straight through."
+        },
+        {
+          "requiredFlags": [
             "guard_distracted"
           ],
           "requiredInventoryItems": [],
@@ -499,7 +506,8 @@
               "text": "Thanks for the info.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "viktor_gave_intel"
         },
         {
           "id": "rooftops",
@@ -582,7 +590,8 @@
               "text": "Thanks for the help.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "mox_gave_intel"
         },
         {
           "id": "undercity",
