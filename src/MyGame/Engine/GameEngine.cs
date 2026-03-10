@@ -58,7 +58,7 @@ public class GameEngine
 
         while (_state.IsRunning)
         {
-            _io.Write("\n> ");
+            _io.Write(ColorConsole.Prompt("\n> "));
             var input = _io.ReadLine();
             if (input is null)
                 break;

@@ -12,7 +12,7 @@ public class UseCommand : ICommand
     {
         if (command.Noun is null)
         {
-            io.WriteLine("Use what?");
+            io.WriteLine(ColorConsole.Error("Use what?"));
             return;
         }
 
@@ -22,7 +22,7 @@ public class UseCommand : ICommand
 
         if (item is null)
         {
-            io.WriteLine($"You don't have \"{command.Noun}\" in your inventory.");
+            io.WriteLine(ColorConsole.Error($"You don't have \"{command.Noun}\" in your inventory."));
             return;
         }
 
@@ -62,6 +62,6 @@ public class UseCommand : ICommand
             return;
         }
 
-        io.WriteLine($"You're not sure how to use the {item.Name} here.");
+        io.WriteLine(ColorConsole.Error($"You're not sure how to use the {item.Name} here."));
     }
 }
