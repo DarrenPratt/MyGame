@@ -56,3 +56,16 @@
 - **World dynamics complete**: All 10 rooms now include meaningful narrator variants. Content team accomplished primary backlog item—variants provide player with reactive, emotionally resonant descriptions of each location across game progression.
 - **Orchestration documented**: Rogue's orchestration log created in .squad/orchestration-log/; session summary in .squad/log/ with Judy and Rogue work; decisions merged and inbox cleaned.
 
+### Session 16 — Content Decision: Unused Items Treatment (Issue #54)
+
+- **repair_kit redesign:** Removed misleading "useful for repairing or bypassing locks" language. Reframed as undercity salvage artifact with cultural significance—symbol of jury-rigged survival in underground economy. Added UseMessage emphasizing narrative atmosphere over mechanical function (UseTargetId remains null).
+- **flyer redesign:** Enhanced from pure flavor to undercity rumor-mill propaganda. Description framed as information contraband. Added UseMessage reflecting cyberpunk ethos ("information trades fast down here, faster than bullets").
+- **Content Strategy:** Both items remain pickup-able but mechanically inert (UseTargetId: null). Their value is atmospheric/narrative. UseMessages activate when player uses item, creating brief flavor moments that deepen world immersion.
+- **Narrative Consistency:** Both items reinforce the undercity/black-market ecosystem and emphasize information as currency in the cyberpunk setting. Salvage economy + information network strengthen central conflict (corporate megastructures vs. underground resistance).
+- **No Engine Changes Required:** UseCommand already supports null UseTargetId (displays UseMessage only). No exits depend on these items. No flag modifications required. All 227 tests pass.
+
+### Session 16 & 17 — Decision Documentation (2026-03-10T20:26:55Z)
+
+- **Decision filed to inbox:** Issue #54 unused items treatment documented in `.squad/decisions/inbox/rogue-unused-items.md` with full rationale, implementation details, and future expansion notes.
+- **Decision merged to decisions.md:** Rogue's content decision merged into official decisions registry. Inbox file deleted. Decision now part of permanent record.
+- **Scribe orchestration:** All agent work documented across Rounds 1 & 2. Full coordination logs created. Decision inbox processed and archived.
