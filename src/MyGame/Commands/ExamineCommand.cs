@@ -1,4 +1,4 @@
-namespace MyGame.Commands;
+﻿namespace MyGame.Commands;
 
 using MyGame.Engine;
 
@@ -23,6 +23,15 @@ public class ExamineCommand : ICommand
             return;
         }
 
-        io.WriteLine(ColorConsole.Error($"You don't see any \"{command.Noun}\" to examine."));
+        var npc = state.CurrentRoom.Npcs.FirstOrDefault(n =>
+            n.Id.Equals(command.Noun, StringComparison.OrdinalIgnoreCase)
+            || n.Name.Contains(command.Noun, StringComparison.OrdinalIgnoreCase));
+        if (npc is not null)
+        {
+            io.WriteLine(ColorConsole.Flavor(npc.Description));
+            return;
+        }
+
+        io.WriteLine(ColorConsole.Error($"You don't see any \"{command.Noun}\" here."));
     }
 }

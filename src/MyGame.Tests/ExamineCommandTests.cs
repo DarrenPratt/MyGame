@@ -1,4 +1,4 @@
-using MyGame.Commands;
+﻿using MyGame.Commands;
 using MyGame.Engine;
 using MyGame.Models;
 using MyGame.Tests.Helpers;
@@ -265,13 +265,13 @@ public class ExamineCommandTests
     }
 
     // ──────────────────────────────────────────────
-    // NPC present but examine looks only at items
+    // NPC examine support
     // ──────────────────────────────────────────────
 
     [Fact]
-    public void Execute_NpcInRoom_ButNoMatchingItem_ShowsNotFoundError()
+    public void Execute_NpcInRoom_ById_ShowsNpcDescription()
     {
-        // Arrange — NPC is in the room but ExamineCommand only searches items
+        // Arrange
         var state = WorldFactory.SingleRoomState();
         state.CurrentRoom.Npcs.Add(new Npc
         {
@@ -286,9 +286,105 @@ public class ExamineCommandTests
         // Act
         cmd.Execute(new ParsedCommand("examine", "viktor"), state, io);
 
-        // Assert — not an item, so not-found error appears
-        Assert.True(io.OutputContains("viktor"));
+        // Assert — NPC found; description is shown
+        Assert.True(io.OutputContains("A weathered data broker."));
+    }
+
+    [Fact]
+    public void Execute_NpcInRoom_ByPartialName_ShowsNpcDescription()
+    {
+        // Arrange
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Npcs.Add(new Npc
+        {
+            Id = "viktor",
+            Name = "Viktor the Broker",
+            Description = "A weathered data broker.",
+            Dialogue = new()
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act — partial name match
+        cmd.Execute(new ParsedCommand("examine", "broker"), state, io);
+
+        // Assert
+        Assert.True(io.OutputContains("A weathered data broker."));
+    }
+
+    [Fact]
+    public void Execute_NpcInRoom_ByName_IsCaseInsensitive()
+    {
+        // Arrange
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Npcs.Add(new Npc
+        {
+            Id = "viktor",
+            Name = "Viktor",
+            Description = "A weathered data broker.",
+            Dialogue = new()
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("examine", "VIKTOR"), state, io);
+
+        // Assert
+        Assert.True(io.OutputContains("A weathered data broker."));
+    }
+
+    [Fact]
+    public void Execute_NpcNotInRoom_ShowsNotFoundError()
+    {
+        // Arrange — no matching item or NPC
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Npcs.Add(new Npc
+        {
+            Id = "viktor",
+            Name = "Viktor",
+            Description = "A weathered data broker.",
+            Dialogue = new()
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act — search for someone who is not here
+        cmd.Execute(new ParsedCommand("examine", "ghost"), state, io);
+
+        // Assert — not found
+        Assert.True(io.OutputContains("ghost"));
         Assert.False(io.OutputContains("A weathered data broker."));
+    }
+
+    [Fact]
+    public void Execute_ItemNameTakesPriorityOverNpcName()
+    {
+        // Arrange — item and NPC share overlapping names; item is checked first
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Items.Add(new Item
+        {
+            Id = "chip",
+            Name = "Data Chip",
+            Description = "Item description.",
+            CanPickUp = true
+        });
+        state.CurrentRoom.Npcs.Add(new Npc
+        {
+            Id = "chip_npc",
+            Name = "Chip",
+            Description = "NPC description.",
+            Dialogue = new()
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("examine", "chip"), state, io);
+
+        // Assert — item wins over NPC
+        Assert.True(io.OutputContains("Item description."));
+        Assert.False(io.OutputContains("NPC description."));
     }
 
     // ──────────────────────────────────────────────
