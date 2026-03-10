@@ -99,5 +99,11 @@
 - **Session log written**: Comprehensive summary of parallel Issue #46 and Issue #38 work (227 tests passing)
 - **Decisions merged**: All four inbox decision files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md; inbox files deleted
 - **Agent histories updated**: Judy and River histories append with session 11 summaries
+
+### Session 12 — FindItem Deduplication (Issue #33)
+
+- **`GameStateExtensions.cs` created in `MyGame.Engine`**: Three public extension methods on `GameState` — `FindItem(noun)` (room then inventory), `FindRoomItem(noun)` (room only), `FindInventoryItem(noun)` (inventory only). All share a private `MatchesNoun` predicate (exact ID or partial name, case-insensitive).
+- **Four commands refactored**: `TakeCommand` → `FindRoomItem`, `DropCommand` → `FindInventoryItem`, `ExamineCommand` → `FindItem` (private static helper removed), `UseCommand` → `FindInventoryItem`. Search semantics preserved exactly.
+- **All 227 tests pass** unchanged.
 - **Git commit prepared**: .squad/ changes staged and committed with CoAuthor trailer
 
