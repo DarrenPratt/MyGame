@@ -9,4 +9,5 @@ public class Room
     public List<Item> Items { get; } = new();
     public List<NarratorVariant> NarratorVariants { get; init; } = new();
     public List<Npc> Npcs { get; init; } = new();
+    public List<string> AmbientMessages { get; init; } = new();
 }

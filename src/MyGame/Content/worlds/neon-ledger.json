@@ -177,6 +177,13 @@
       "narratorVariants": [
         {
           "requiredFlags": [
+            "viktor_gave_intel"
+          ],
+          "requiredInventoryItems": [],
+          "description": "Viktor's tip resonates as you face the checkpoint: these guards are greedy corp-sec with a price. You study them differently now, watching for weakness. The right leverage could walk you straight through."
+        },
+        {
+          "requiredFlags": [
             "guard_distracted"
           ],
           "requiredInventoryItems": [],
@@ -260,14 +267,14 @@
     {
       "id": "corridor",
       "name": "Service Corridor",
-      "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A back exit sign glows faintly at the far end.",
+      "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A darkened security panel is mounted near the east exit, its screen cracked and dormant. A back exit sign glows faintly at the far end.",
       "narratorVariants": [
         {
           "requiredFlags": [
             "visit_count_gt_1"
           ],
           "requiredInventoryItems": [],
-          "description": "The service corridor is a second home now. Familiar pipes, familiar stench of ozone. A maintenance drone passes without acknowledgment—you're part of the system now. The green emergency lights feel less alien, more like camouflage."
+          "description": "The service corridor is a second home now. Familiar pipes, familiar stench of ozone. A maintenance drone passes without acknowledgment—you're part of the system now. The green emergency lights feel less alien, more like camouflage. That broken panel still sits dark and useless."
         },
         {
           "requiredFlags": [
@@ -276,7 +283,7 @@
           "requiredInventoryItems": [
             "drive"
           ],
-          "description": "The drive is burning in your pocket. These passages suddenly feel like the only path to freedom. The back exit sign glows brighter now, like a beacon. Every moment in this corridor is borrowed time."
+          "description": "The drive is burning in your pocket. These passages suddenly feel like the only path to freedom. The back exit sign glows brighter now, like a beacon. The security panel near the exit flickers weakly—if it worked, it might give you control. Every moment in this corridor is borrowed time."
         }
       ],
       "exits": [
@@ -288,7 +295,9 @@
           "description": null
         }
       ],
-      "itemIds": [],
+      "itemIds": [
+        "security_panel"
+      ],
       "npcIds": []
     },
     {
