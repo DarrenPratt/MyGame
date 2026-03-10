@@ -75,6 +75,24 @@
 - **Backward compatibility preserved**: All existing tests construct `GameEngine` without a factory (`stateFactory = null` default). 199 tests pass unchanged.
 - **`_state` is no longer `readonly`**: Required so the retry loop can replace it with a fresh instance from the factory.
 
+### Session 9 — Fix Save/Load State Corruption (Issue #35)
+
+- **Three fields were silently dropped on save/load**: `DroneThreatLevel`, `DroneThreatThreshold`, and per-room exit `IsLocked` states were not included in the `SaveData` record.
+- **`DroneThreatThreshold` changed from `init` to `set`**: Required to allow `LoadCommand` to restore it on an existing `GameState` object. No tests relied on it being immutable.
+- **`SaveCommand` now captures all exit states**: Builds a `Dictionary<string, Dictionary<string, bool>>` of `roomId → direction → isLocked` for all rooms that have exits.
+- **`LoadCommand` restores with backward-compat defaults**: `DroneThreatLevel` defaults to 0, `DroneThreatThreshold` keeps the world default if saved value is 0, `ExitLockStates` is null-safe — old saves load without errors.
+- **River's 6 pre-written tests all passed immediately** after the fix. Total tests: 211.
+- **PR**: #60 on DarrenPratt/MyGame
+
+### Session 10 — Fix viktor_met Narrator Flag (Issue #46)
+
+- **Root cause found immediately**: `GameState.Flags` (`HashSet<string>`) already existed; `NarratorEngine.GetVariant()` already checked it. TalkCommand simply never set any flag after a dialogue interaction.
+- **Narrator variant system**: `NarratorVariant.RequiredFlags` is a list of flag strings. `NarratorEngine` selects the most-specific matching variant (highest `RequiredFlags.Count + RequiredInventoryItems.Count` among all whose conditions are fully satisfied). Falls back to `Room.Description` if no variant matches.
+- **Rooms using `viktor_met`**: `bar` has a variant keyed on `viktor_met` that changes narration after meeting Viktor. No other room uses this flag.
+- **Fix**: One line added to `TalkCommand.Execute()` — `state.Flags.Add($"{npc.Id}_met")` — placed immediately after confirming the NPC has dialogue, before the conversation loop. Generic: sets `viktor_met`, `mox_met`, `guard_met` for any NPC with dialogue, no special-casing.
+- **ExamineCommandTests.cs**: River had already written 16 new ExamineCommand tests locally; they were untracked and got picked up in the commit. 227 tests pass.
+- **PR**: #61 on DarrenPratt/MyGame
+
 ## Team Updates
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
