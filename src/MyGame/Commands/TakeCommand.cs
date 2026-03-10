@@ -16,9 +16,7 @@ public class TakeCommand : ICommand
             return;
         }
 
-        var item = state.CurrentRoom.Items.FirstOrDefault(i =>
-            i.Id.Equals(command.Noun, StringComparison.OrdinalIgnoreCase) ||
-            i.Name.Contains(command.Noun, StringComparison.OrdinalIgnoreCase));
+        var item = state.FindRoomItem(command.Noun);
 
         if (item is null)
         {

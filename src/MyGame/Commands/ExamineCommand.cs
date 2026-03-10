@@ -1,7 +1,6 @@
 namespace MyGame.Commands;
 
 using MyGame.Engine;
-using MyGame.Models;
 
 public class ExamineCommand : ICommand
 {
@@ -17,7 +16,7 @@ public class ExamineCommand : ICommand
             return;
         }
 
-        var item = FindItem(command.Noun, state);
+        var item = state.FindItem(command.Noun);
         if (item is not null)
         {
             io.WriteLine(item.Description);
@@ -25,14 +24,5 @@ public class ExamineCommand : ICommand
         }
 
         io.WriteLine(ColorConsole.Error($"You don't see any \"{command.Noun}\" to examine."));
-    }
-
-    private static Item? FindItem(string noun, GameState state)
-    {
-        return state.CurrentRoom.Items
-            .Concat(state.Inventory)
-            .FirstOrDefault(i =>
-                i.Id.Equals(noun, StringComparison.OrdinalIgnoreCase) ||
-                i.Name.Contains(noun, StringComparison.OrdinalIgnoreCase));
     }
 }
