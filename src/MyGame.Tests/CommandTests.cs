@@ -16,23 +16,6 @@ public class CommandTests
     // Helpers
     // ──────────────────────────────────────────────
 
-    /// <summary>
-    /// Creates a registry with all standard commands registered.
-    /// </summary>
-    private static CommandRegistry BuildRegistry()
-    {
-        var registry = new CommandRegistry();
-        registry.Register(new LookCommand());
-        registry.Register(new GoCommand());
-        registry.Register(new TakeCommand());
-        registry.Register(new DropCommand());
-        registry.Register(new InventoryCommand());
-        registry.Register(new UseCommand());
-        registry.Register(new HelpCommand(registry));
-        registry.Register(new QuitCommand());
-        return registry;
-    }
-
     // ──────────────────────────────────────────────
     // LookCommand
     // ──────────────────────────────────────────────
@@ -707,7 +690,7 @@ public class CommandTests
     public void Help_PrintsAvailableCommands()
     {
         // Arrange
-        var registry = BuildRegistry();
+        var registry = RegistryFactory.BuildRegistry();
         var state = WorldFactory.SingleRoomState();
         var io = new FakeInputOutput();
         var cmd = new HelpCommand(registry);
@@ -723,7 +706,7 @@ public class CommandTests
     public void Help_PrintsHelpTextForCommands()
     {
         // Arrange
-        var registry = BuildRegistry();
+        var registry = RegistryFactory.BuildRegistry();
         var state = WorldFactory.SingleRoomState();
         var io = new FakeInputOutput();
         var cmd = new HelpCommand(registry);
@@ -762,7 +745,7 @@ public class CommandTests
         // Arrange
         var state = WorldFactory.SingleRoomState();
         var io = new FakeInputOutput();
-        var registry = BuildRegistry();
+        var registry = RegistryFactory.BuildRegistry();
 
         // Act — go through registry to test alias dispatch
         registry.Execute(new ParsedCommand(alias, null), state, io);
@@ -779,7 +762,7 @@ public class CommandTests
     public void UnknownCommand_PrintsHelpfulError()
     {
         // Arrange
-        var registry = BuildRegistry();
+        var registry = RegistryFactory.BuildRegistry();
         var state = WorldFactory.SingleRoomState();
         var io = new FakeInputOutput();
 
@@ -798,7 +781,7 @@ public class CommandTests
     public void UnknownCommand_Various_AllPrintError(string verb)
     {
         // Arrange
-        var registry = BuildRegistry();
+        var registry = RegistryFactory.BuildRegistry();
         var state = WorldFactory.SingleRoomState();
         var io = new FakeInputOutput();
 

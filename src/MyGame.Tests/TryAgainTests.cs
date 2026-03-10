@@ -1,4 +1,3 @@
-using MyGame.Commands;
 using MyGame.Engine;
 using MyGame.Tests.Helpers;
 using Xunit;
@@ -31,20 +30,6 @@ public class TryAgainTests
         return () => new JsonWorldLoader().Load(worldPath).State;
     }
 
-    private static CommandRegistry BuildRegistry(GameState state)
-    {
-        var registry = new CommandRegistry();
-        registry.Register(new LookCommand());
-        registry.Register(new GoCommand());
-        registry.Register(new TakeCommand());
-        registry.Register(new DropCommand());
-        registry.Register(new InventoryCommand());
-        registry.Register(new UseCommand());
-        registry.Register(new HelpCommand(registry));
-        registry.Register(new QuitCommand());
-        return registry;
-    }
-
     // Minimum inputs to reach and die in the plaza.
     private static readonly string[] DeathInputs =
     [
@@ -64,7 +49,7 @@ public class TryAgainTests
     {
         var factory = BuildStateFactory();
         var state = factory();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput([.. DeathInputs, "no"]);
         var engine = new GameEngine(state, registry, io, stateFactory: factory);
 
@@ -79,7 +64,7 @@ public class TryAgainTests
     {
         var factory = BuildStateFactory();
         var state = factory();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput([.. DeathInputs, "no"]);
         var engine = new GameEngine(state, registry, io, stateFactory: factory);
 
@@ -94,7 +79,7 @@ public class TryAgainTests
     {
         var factory = BuildStateFactory();
         var state = factory();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         // After death + yes → engine resets state and runs a fresh session; quit ends it
         var io = new FakeInputOutput([.. DeathInputs, "yes", "quit"]);
         var engine = new GameEngine(state, registry, io, stateFactory: factory);
@@ -112,7 +97,7 @@ public class TryAgainTests
     {
         var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
         var state = new JsonWorldLoader().Load(worldPath).State;
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput(DeathInputs);
         var engine = new GameEngine(state, registry, io); // no factory → backward-compatible path
 
@@ -127,7 +112,7 @@ public class TryAgainTests
     {
         var factory = BuildStateFactory();
         var state = factory();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput(
             "go east",        // alley → bar
             "go up",          // bar → rooftop
@@ -159,7 +144,7 @@ public class TryAgainTests
     {
         var factory = BuildStateFactory();
         var state = factory();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var io = new FakeInputOutput("quit");
         var engine = new GameEngine(state, registry, io, stateFactory: factory);
 
