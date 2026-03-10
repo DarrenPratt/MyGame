@@ -238,3 +238,37 @@ All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/in
 **How CommandParser works:** Static class in `MyGame.Engine`. `Parse(string input)` trims/lowercases, splits on first space for Verb + rest, then scans rest for `" on "` to populate `Target`. Returns `ParsedCommand(Verb, Noun?, Target?)` record.
 
 All 227 tests pass. `Parser.cs` is deleted. Decision inbox: `.squad/decisions/inbox/river-parser-cleanup.md`.
+
+
+## Learnings
+
+### Session 2026-03-10 — Issue #43: NarratorEngine Edge Case Coverage
+
+**Added 9 edge case tests** to `src/MyGame.Tests/NarratorEngineTests.cs` (file now has 19 tests total). PR #68 opened against main.
+
+**New tests added:**
+
+| Test | Edge case covered |
+|---|---|
+| `GetVariant_NoVariants_ReturnsNull` | Direct null return from `GetVariant` with empty list |
+| `GetVariant_VariantPresent_RequiredFlagNotSet_ReturnsNull` | Direct null return when no variant matches |
+| `GetDescription_InventoryOnlyVariant_ItemPresent_ReturnsVariantDescription` | Inventory-only variant activates when item carried |
+| `GetDescription_InventoryOnlyVariant_ItemAbsent_ReturnsBaseDescription` | Missing inventory item → base description |
+| `GetDescription_InventoryVariant_MatchedByItemId_NotByItemName` | Matching uses item.Id, not item.Name |
+| `GetDescription_InventoryVariant_ItemWithMatchingName_ButWrongId_ReturnsBase` | Name match alone is not sufficient |
+| `GetDescription_HigherSpecificityNotMatched_LowerSpecificityMatched_ReturnsLower` | Falls back to lower-specificity variant when best is unmet |
+| `GetDescription_VariantRequiresThreeFlags_AllPresent_ReturnsVariantDescription` | 3-flag gate all satisfied |
+| `GetDescription_TwoMatchingVariantsSameScore_FirstInListReturned` | Tied specificity → first in list wins (stable LINQ sort) |
+
+**Key findings from reading NarratorEngine.cs:**
+- `GetVariant` is only 13 lines — LINQ Where + OrderByDescending + FirstOrDefault
+- Inventory match is `state.Inventory.Any(item => item.Id == id)` — strictly by Id, not Name
+- Score = `RequiredFlags.Count + RequiredInventoryItems.Count`
+- `GetDescription` null-coalesces: `GetVariant(room, state)?.Description ?? room.Description`
+
+**Gaps that existed in prior tests:**
+- `GetVariant` null return was only tested indirectly through `GetDescription`
+- No test for the high-specificity-unmet/lower-specificity-matched fallback scenario
+- Id vs Name distinction for inventory matching was entirely untested
+
+**Test count:** 227 baseline → 236 after this session (all passing).
