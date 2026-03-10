@@ -224,11 +224,89 @@
 
 ---
 
+## Codebase Review Findings — Johnny (Lead & Architect)
+
+**Date:** 2026-03-10  
+**Status:** Complete  
+**Scope:** Full architectural audit of v0.2 codebase
+
+### Critical Issues (P1)
+
+**Save/Load Corruption (#35)**
+- **Finding:** Save/Load commands persist only room, inventory, and flags. DroneThreatLevel and unlocked exit state are lost.
+- **Impact:** Mid-game saves are silently corrupted. Reloading loses all drone threat progress and puzzle-solving effort.
+- **Action:** Judy to extend SaveCommand/LoadCommand to include exit state and threat level persistence.
+
+### Significant Issues (P2)
+
+**TalkCommand Dialogue Doesn't Set Flags (#46)**
+- **Finding:** Dialogue trees in Npcs run but never mutate game state. Narrator variants keyed on `viktor_met` and `guard_bribed` cannot trigger.
+- **Action:** Judy to add flag-setting capability to dialogue choice system.
+
+**Hardcoded Narrative in Engine Code (#34)**
+- **Finding:** GoCommand and TakeCommand contain magic strings that bypass JSON content pipeline.
+- **Action:** Judy to extract hardcoded text to data-driven approach (JSON metadata or command properties).
+
+**Integration Tests Missing 4 Commands (#40)**
+- **Finding:** Test helpers register 4 core commands but not examine, talk, save, load.
+- **Action:** River to add missing command registration to test helpers.
+
+**Six Rooms Lack Narrator Variants (#36)**
+- **Finding:** Only alley, bar, plaza have narrator variants. World feels static on revisit.
+- **Action:** Rogue to add atmospheric or contextual variants to rooftop, lobby, server, tunnel, checkpoint, corridor.
+
+**repair_kit and corridor Are Dead Content (#37)**
+- **Finding:** repair_kit has no use case. Corridor is a dead-end with no purpose or reward.
+- **Action:** Rogue to design repair_kit use-case (NPC reward, puzzle unlock) and flesh out corridor (hidden exit, lore item).
+
+**ExamineCommand Untested (#38)**
+- **Finding:** Only command without dedicated test coverage. Edge cases (non-existent items, inventory vs. room) may have gaps.
+- **Action:** River to write comprehensive ExamineCommand unit tests.
+
+### Housekeeping Issues (P3)
+
+**Dead Parser.cs Wrapper (#32)**
+- **Finding:** Parser.cs delegates entirely to CommandParser with no added value.
+- **Action:** Judy to remove class and update imports.
+
+**savegame.json Committed to Repo (#41)**
+- **Finding:** Runtime artifact accidentally committed; creates noise in diffs.
+- **Action:** Judy to remove file and add to .gitignore.
+
+**ARCHITECTURE.md Stale (#51)**
+- **Finding:** Doc doesn't reflect NarratorEngine, ColorConsole, JsonWorldLoader, save/load, drone system, or NPC dialogue.
+- **Action:** Johnny to update architecture doc with current implementation details.
+
+**Drone Threat Logic Inline (#44)**
+- **Finding:** Threat calculation and drone appearance logic scattered in GameEngine.Run().
+- **Action:** Johnny to extract into DroneThreatSystem class for testability and reuse.
+
+**Duplicated FindItem Logic (#33)**
+- **Finding:** Identical method in LookCommand and ExamineCommand.
+- **Action:** Judy to extract into shared ItemRepository utility (or use existing if present).
+
+### Architectural Strengths
+
+- Command pattern with registry — trivial to add new commands
+- IInputOutput abstraction — enables full test coverage without Console coupling
+- JSON world loading — content separated from code
+- NarratorEngine variant system — elegant dynamic descriptions
+- ColorConsole semantic palette — accessible color without hardcoding ANSI codes
+
+### Architectural Weaknesses
+
+- GameEngine has too many concerns (drone logic, banner rendering, win/lose text) — refactoring opportunities
+- Content pipeline gaps — dialogue can't set flags, items can't have custom pickup text
+- Save system incomplete — will silently corrupt game state if thread level or exit state is modified
+
+---
+
 ## Summary
 
 All major decisions documented and deduped. Team achieved:
 - ✅ Clean architecture with testability first
 - ✅ Rich cyberpunk narrative integrated with core mechanics
-- ✅ Comprehensive test coverage (168 tests)
+- ✅ Comprehensive test coverage (205 tests)
 - ✅ Full implementation matching architecture and passing all tests
 - ✅ JSON as sole world source, dead code removed
+- ⚠️ 12 improvement issues identified for v0.3 and beyond

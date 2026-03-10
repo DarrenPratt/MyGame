@@ -78,4 +78,5 @@
 ## Team Updates
 
 - **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
+- **2026-03-10 — Johnny completed codebase review:** Filed 12 improvement issues (4 for Judy, 2 for Rogue, 2 for River, 4 for Johnny). P1 save/load corruption identified. All findings documented in decisions.md.
 
