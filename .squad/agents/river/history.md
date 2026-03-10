@@ -101,6 +101,34 @@
 
 **Pattern observed:** The empty-requirements variant as "default atmospheric" is now an established content pattern. Any room can use this to avoid showing static base descriptions while still allowing flag-conditional overrides.
 
+### Session 2026-03-10 — TryAgainTests for Issue #29
+
+**Wrote 6 new tests** in `src/MyGame.Tests/TryAgainTests.cs` validating Judy's restart/retry feature.
+
+**Tests added:**
+- `Death_WithFactory_ShowsTryAgainPrompt` — factory present + death → "try again" appears in output
+- `Death_WithFactory_AnswerNo_ExitsCleanly` — "no" → IsRunning false, HasLost true
+- `Death_WithFactory_AnswerYes_RestartsGame` — "yes" → banner appears twice (two full sessions)
+- `Death_WithoutFactory_NoTryAgainPrompt` — no factory → no "try again" (backward compat)
+- `Win_DoesNotShowTryAgainPrompt` — win path + factory → prompt never shown
+- `Quit_DoesNotShowTryAgainPrompt` — voluntary quit + factory → prompt never shown
+
+**Patterns for restart/retry testing:**
+- `DeathInputs` static array shared across tests keeps death trigger DRY
+- Named parameter `stateFactory: factory` skips `world` (null) cleanly
+- Banner line count (counting "╔") detects two sessions without needing access to the restarted `GameState` object
+- `FakeInputOutput` collection expression spread `[.. DeathInputs, "no"]` composes input sequences cleanly
+- All 205 tests pass (199 baseline + 6 new)
+
+**Findings:**
+- Judy's implementation already landed and compiles; Program.cs already passes factory
+- `Run()` retry loop only prompts when `HasLost && _stateFactory != null` — clean gate
+- Quit and win both fall through to `break` without prompting — no edge cases needed beyond the 6 tests
+
+## Team Updates
+
+- **2026-03-10 — Judy completed Try-Again feature:** Factory pattern cleanly separates state creation (Program.cs) from execution (GameEngine). Backward compatible. 205 tests passing.
+
 ## Team Updates
 
 - **2026-03-09 — Johnny's architecture delivered:** IInputOutput abstraction made your test strategy possible. CommandRegistry pattern gave you clean test points. Your 114-test suite locked in the authoritative spec for the team.

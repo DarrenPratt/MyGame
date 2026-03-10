@@ -26,5 +26,6 @@ registry.Register(new TalkCommand());
 registry.Register(new SaveCommand());
 registry.Register(new LoadCommand());
 
-var engine = new GameEngine(state, registry, new ConsoleIO(), loaded);
+var engine = new GameEngine(state, registry, new ConsoleIO(), loaded,
+    () => new JsonWorldLoader().Load(worldPath).State);
 engine.Run();
