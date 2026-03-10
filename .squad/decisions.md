@@ -133,6 +133,22 @@ Six focused tests in `src/MyGame.Tests/TryAgainTests.cs`:
 
 All 205 tests pass (199 pre-existing + 6 new).
 
+### PR #62 Closure: Duplicate Code Removal — Issue #31
+**Date:** 2026-03-10  
+**Author:** Judy (C# Developer)  
+**Status:** MERGED (squash) to main
+
+Removed duplicate `FindItem()` method from `LookCommand` that duplicated `GameStateExtensions.FindItem()` introduced in Issue #33. This was an oversight during the initial refactoring.
+
+**Changes:**
+- `LookCommand.cs`: 1 insertion, 9 deletions
+- Migrated call to use extension method: `FindItem(command.Noun, state)` → `state.FindItem(command.Noun)`
+- Removed duplicate private method
+
+**Test Coverage:** 227 tests pass (no new tests required — refactor only)
+
+**Recommendation:** Future shared-utility extractions should include comprehensive grep across all command files before closure.
+
 ## Governance
 
 - All meaningful changes require team consensus
