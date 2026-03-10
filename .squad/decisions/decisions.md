@@ -270,6 +270,7 @@
 - **Action:** Judy to remove class and update imports.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ---
 
 ## Code Organization Decisions — Judy (C# Developer)
@@ -380,6 +381,7 @@ All three use a shared private predicate: exact ID match (case-insensitive) OR p
 
 =======
 
+=======
 **savegame.json Committed to Repo (#41)**
 - **Finding:** Runtime artifact accidentally committed; creates noise in diffs.
 - **Action:** Judy to remove file and add to .gitignore.
@@ -396,6 +398,7 @@ All three use a shared private predicate: exact ID match (case-insensitive) OR p
 - **Finding:** Identical method in LookCommand and ExamineCommand.
 - **Action:** Judy to extract into shared ItemRepository utility (or use existing if present).
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ---
 
@@ -447,6 +450,7 @@ All 227 tests pass. `Parser.cs` is gone from the codebase.
 
 =======
 
+=======
 ### Architectural Strengths
 
 - Command pattern with registry — trivial to add new commands
@@ -463,6 +467,7 @@ All 227 tests pass. `Parser.cs` is gone from the codebase.
 
 ---
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ## Fix Decisions — Judy (C# Developer)
 
@@ -559,11 +564,13 @@ All 227 tests pass. `Parser.cs` is gone from the codebase.
 
 =======
 
+=======
 ## Summary
 
 All major decisions documented and deduped. Team achieved:
 - ✅ Clean architecture with testability first
 - ✅ Rich cyberpunk narrative integrated with core mechanics
+<<<<<<< HEAD
 <<<<<<< HEAD
 - ✅ Comprehensive test coverage (227 tests)
 - ✅ Full implementation matching architecture and passing all tests
@@ -679,3 +686,8 @@ When `GameStateExtensions` was introduced (Issue #33), `ExamineCommand` was migr
 - ⚠️ 12 improvement issues identified for v0.3 and beyond
 
 
+=======
+- ✅ Comprehensive test coverage (205 tests)
+- ✅ Full implementation matching architecture and passing all tests
+- ✅ JSON as sole world source, dead code removed
+- ⚠️ 12 improvement issues identified for v0.3 and beyond

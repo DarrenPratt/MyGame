@@ -3,6 +3,7 @@ using MyGame.Models;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace MyGame.Tests;
@@ -384,6 +385,9 @@ public class JsonWorldLoaderTests : IDisposable
         // Assert
         Assert.Equal("server", state.WinRoomId);
     }
+=======
+
+>>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)
     // ── Metadata forwarding ───────────────────────────────────────────────
 
     [Fact]
@@ -691,6 +695,9 @@ public class JsonWorldLoaderTests : IDisposable
         var loader = new JsonWorldLoader();
 
         Assert.Throws<System.Text.Json.JsonException>(() => loader.Load(path));
+=======
+        Assert.Throws<JsonException>(() => loader.Load(path));
+>>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)
     }
 
     [Fact]
@@ -715,3 +722,18 @@ public class JsonWorldLoaderTests : IDisposable
     ""npcs"": []
 }}";
 }
+=======
+    private static string MinimalJsonWith(string extra) => $$"""
+        {
+            {{extra}}
+            "startRoomId": "room1",
+            "winRoomId": "room1",
+            "rooms": [
+                { "id": "room1", "name": "Room", "description": "A room." }
+            ],
+            "items": [],
+            "npcs": []
+        }
+        """;
+}
+>>>>>>> 3da7361 (refactor: extract shared BuildRegistry helper in tests)

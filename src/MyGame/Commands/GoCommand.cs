@@ -1,4 +1,4 @@
-namespace MyGame.Commands;
+﻿namespace MyGame.Commands;
 
 using MyGame.Engine;
 
@@ -53,14 +53,10 @@ public class GoCommand : ICommand
         state.CurrentRoomId = exit.TargetRoomId;
         io.WriteLine($"You move {direction}.");
 
-        // Win condition: entering the server room
-        var winRoomId = state.WinRoomId ?? "server";
-        if (state.CurrentRoomId == winRoomId)
+        if (state.WinRoomId is not null && state.CurrentRoomId == state.WinRoomId)
         {
             state.HasWon = true;
             state.IsRunning = false;
-            io.WriteLine(GameMessages.Win.ServerRoom1);
-            io.WriteLine(GameMessages.Win.ServerRoom2);
             return;
         }
 

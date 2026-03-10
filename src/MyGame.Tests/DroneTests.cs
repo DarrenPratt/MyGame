@@ -1,4 +1,3 @@
-using MyGame.Commands;
 using MyGame.Engine;
 using MyGame.Tests.Helpers;
 using Xunit;
@@ -20,7 +19,7 @@ namespace MyGame.Tests;
 public class DroneTests
 {
     // ──────────────────────────────────────────────
-    // Helpers (mirrored from GameIntegrationTests)
+    // Helpers
     // ──────────────────────────────────────────────
 
     private static GameState BuildState()
@@ -29,25 +28,11 @@ public class DroneTests
         return new JsonWorldLoader().Load(worldPath).State;
     }
 
-    private static CommandRegistry BuildRegistry(GameState state)
-    {
-        var registry = new CommandRegistry();
-        registry.Register(new LookCommand());
-        registry.Register(new GoCommand());
-        registry.Register(new TakeCommand());
-        registry.Register(new DropCommand());
-        registry.Register(new InventoryCommand());
-        registry.Register(new UseCommand());
-        registry.Register(new HelpCommand(registry));
-        registry.Register(new QuitCommand());
-        return registry;
-    }
-
     private static (GameEngine engine, GameState state) BuildEngineWithInputs(params string[] inputs)
     {
         var io = new FakeInputOutput(inputs);
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
         return (engine, state);
     }
@@ -56,7 +41,7 @@ public class DroneTests
     {
         var io = new FakeInputOutput(inputs);
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
         return (engine, state, io);
     }
@@ -249,7 +234,7 @@ public class DroneTests
             "go north"        // lobby → server (WIN)
         );
         var state = BuildState();
-        var registry = BuildRegistry(state);
+        var registry = RegistryFactory.BuildRegistry();
         var engine = new GameEngine(state, registry, io);
 
         engine.Run();

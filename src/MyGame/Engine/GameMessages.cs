@@ -1,4 +1,4 @@
-namespace MyGame.Engine;
+﻿namespace MyGame.Engine;
 
 /// <summary>
 /// All player-facing narrative and UI strings, grouped by context.
@@ -31,8 +31,6 @@ public static class GameMessages
 
     public static class Win
     {
-        public const string ServerRoom1 = "The server room hums around you. Rows of data towers stretch into the dark.";
-        public const string ServerRoom2 = "You find the drive. Your hand trembles as you pocket it.";
         public const string DefaultMessage =
             "You've done it. The SynthCorp data drive is in your hands—real, tangible proof\n" +
             "of what they've been hiding. As you slip out through the service corridor, corporate\n" +
