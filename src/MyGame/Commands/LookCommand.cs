@@ -13,7 +13,7 @@ public class LookCommand : ICommand
     {
         if (command.Noun is not null)
         {
-            var item = FindItem(command.Noun, state);
+            var item = state.FindItem(command.Noun);
             if (item is not null)
             {
                 io.WriteLine(item.Description);
@@ -71,12 +71,4 @@ public class LookCommand : ICommand
         }
     }
 
-    private static Item? FindItem(string noun, GameState state)
-    {
-        return state.CurrentRoom.Items
-            .Concat(state.Inventory)
-            .FirstOrDefault(i =>
-                i.Id.Equals(noun, StringComparison.OrdinalIgnoreCase) ||
-                i.Name.Contains(noun, StringComparison.OrdinalIgnoreCase));
-    }
 }
