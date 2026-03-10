@@ -1,4 +1,4 @@
-using MyGame.Commands;
+﻿using MyGame.Commands;
 using MyGame.Engine;
 
 namespace MyGame.Tests.Helpers;
@@ -10,6 +10,7 @@ public static class RegistryFactory
 {
     /// <summary>
     /// Creates a <see cref="CommandRegistry"/> with all standard game commands registered.
+    /// Mirrors the command set wired up in <c>Program.cs</c>.
     /// </summary>
     public static CommandRegistry BuildRegistry()
     {
@@ -20,8 +21,12 @@ public static class RegistryFactory
         registry.Register(new DropCommand());
         registry.Register(new InventoryCommand());
         registry.Register(new UseCommand());
+        registry.Register(new ExamineCommand());
         registry.Register(new HelpCommand(registry));
         registry.Register(new QuitCommand());
+        registry.Register(new TalkCommand());
+        registry.Register(new SaveCommand());
+        registry.Register(new LoadCommand());
         return registry;
     }
 }

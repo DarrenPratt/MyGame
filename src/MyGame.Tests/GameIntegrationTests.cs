@@ -371,4 +371,35 @@ public class GameIntegrationTests
 
         Assert.True(state.HasWon, "Should win even after drop/retake cycle.");
     }
+
+    // ──────────────────────────────────────────────
+    // Registry completeness
+    // ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Verifies that RegistryFactory registers every verb that Program.cs wires up in production.
+    /// Add new verbs here whenever a new command lands in Program.cs.
+    /// </summary>
+    [Theory]
+    [InlineData("look")]
+    [InlineData("go")]
+    [InlineData("take")]
+    [InlineData("drop")]
+    [InlineData("inventory")]
+    [InlineData("use")]
+    [InlineData("examine")]
+    [InlineData("help")]
+    [InlineData("quit")]
+    [InlineData("talk")]
+    [InlineData("save")]
+    [InlineData("load")]
+    public void RegistryFactory_RegistersAllProductionCommands(string verb)
+    {
+        var registry = RegistryFactory.BuildRegistry();
+        var registeredVerbs = registry.AllCommands.Select(c => c.Verb).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.True(registeredVerbs.Contains(verb),
+            $"RegistryFactory is missing command with verb \"{verb}\". " +
+            $"Add it to RegistryFactory.BuildRegistry() to match Program.cs.");
+    }
 }
