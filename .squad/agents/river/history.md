@@ -199,3 +199,18 @@
 - Room item takes priority over identical inventory item (Concat order: room first)
 - Case-insensitive search covers both ID and Name lookups
 - Partial name match (`Name.Contains`) means "corp" finds "Corp Keycard"
+
+## Session 11 — Scribe Orchestration (2026-03-10T19:15:00Z)
+
+- **Orchestration logs created**: Documented Judy's viktor_met flag fix (Issue #46) and your ExamineCommand test coverage (Issue #38)
+- **Session log written**: Comprehensive summary of parallel work; 227 tests passing
+- **Decisions merged**: All inbox files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md with full details and deduplicated
+- **Inbox cleaned**: All merged files deleted from .squad/decisions/inbox/
+- **History updated**: Judy and River histories appended with Session 11 and earlier summaries
+- **Git commit prepared**: .squad/ orchestration, logs, and updated decisions committed
+
+## Team Updates
+
+- **2026-03-10 — Judy fixed viktor_met flag:** Generic flag-setting in TalkCommand now sets `{npc.Id}_met` for all NPCs. 227 tests passing (including your 16 new ExamineCommand tests unexpectedly committed).
+- **2026-03-10 — River completed ExamineCommand test coverage:** 16 comprehensive tests covering all behaviors, priorities, and boundaries. Dedicated test file confirms ExamineCommand is standalone command (not noun on LookCommand).
+- **2026-03-10 — River validated save/load state corruption fix:** 6 new SaveLoadTests validate Judy's persistence of DroneThreatLevel, DroneThreatThreshold, and exit lock states.

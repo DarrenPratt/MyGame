@@ -301,12 +301,108 @@
 
 ---
 
+## Fix Decisions — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Complete
+
+### Decision 1: Persist Drone Threat and Exit Lock State in Save/Load (Issue #35)
+
+**Problem:** Save/Load commands persisted only room, inventory, and flags. DroneThreatLevel, DroneThreatThreshold, and exit IsLocked states were silently dropped on reload.
+
+**Decision:**
+1. Change `GameState.DroneThreatThreshold` from `init` to `set` to allow LoadCommand to restore it
+2. Extend `SaveData` record with `DroneThreatLevel`, `DroneThreatThreshold`, and `ExitLockStates` (roomId → direction → isLocked)
+3. Implement backward compatibility: old saves missing fields default to 0/0/null
+
+**Rationale:**
+- Players can no longer exploit save/load to reset drone threat
+- Door unlock progress persists across save/load cycles
+- Minimal changes to GameState (one modifier change)
+- Full backward compatibility with existing save files
+
+**Consequences:**
+- All 211 tests pass (205 pre-existing + 6 new from River)
+- Mid-game saves no longer silently corrupt
+
+### Decision 2: Set NPC-Met Flags in TalkCommand (Issue #46)
+
+**Problem:** Narrator variants keyed on flags like `viktor_met` and `guard_bribed` were unreachable because TalkCommand never set any flags during dialogue interactions.
+
+**Decision:** Add `state.Flags.Add($"{npc.Id}_met")` in `TalkCommand.Execute()` immediately after confirming the NPC has dialogue, before entering the conversation loop. Generic approach: sets `viktor_met`, `mox_met`, `guard_met` for any NPC dialogue.
+
+**Rationale:**
+- **No new infrastructure:** `GameState.Flags` and `NarratorEngine` were already wired correctly
+- **Generic over specific:** Using `npc.Id` instead of hardcoding `"viktor"` means all NPCs benefit automatically
+- **Trigger point:** Setting flag before loop means even minimal dialogue counts as having met the NPC
+- **Flag naming convention:** `{npc.Id}_met` mirrors existing world-file conventions (`keycard_used`, `cred_chip_obtained`)
+
+**Consequences:**
+- `viktor_met` narrator variant in bar is now reachable after any Viktor dialogue
+- `mox_met` and `guard_met` flags also set (no current room variants use them, available for future content)
+- All 227 tests pass (211 pre-existing + 16 new ExamineCommand tests from River)
+
+---
+
+## Test Decisions — River (Tester)
+
+**Date:** 2026-03-10  
+**Status:** Complete
+
+### Decision 1: Save/Load State Corruption Tests (Issue #35)
+
+**What Was Tested:** Six tests in `SaveLoadTests.cs` proving Judy's fix to SaveCommand/LoadCommand:
+- `SaveLoad_PreservesDroneThreatLevel` — DroneThreatLevel=3 restored after reload
+- `SaveLoad_PreservesDroneThreatThreshold` — Non-default threshold (6) restored after reload
+- `SaveLoad_PreservesUnlockedExit` — Unlocked exit remains unlocked after reload
+- `SaveLoad_DroneThreatZeroByDefault_NotCorrupted` — Zero value not silently dropped
+- `SaveLoad_NonZeroThreatSurvivesRoundtrip` — High threat cannot be reset via save/load exploit
+- `SaveLoad_LockedExitRemainsLockedAfterReload` — Locked exit stays locked (baseline)
+
+**Key Design Decisions:**
+1. Private `TwoRoomStateWithLockedExit()` helper — not added to WorldFactory (save/load-specific concept)
+2. Unique filename per test within shared `_testDirectory` — prevents test interference
+3. Separate fresh `newState` objects — no state sharing between save and load phases
+4. `DroneThreatThreshold` test requires `init` → `set` change (Judy's fix enables this)
+5. Backward compatibility — old saves not in test scope (implementation detail handled by Judy)
+
+**Total Tests:** 211 (205 pre-existing + 6 new)
+
+### Decision 2: ExamineCommand Test Coverage (Issue #38)
+
+**What Was Tested:** 16 new tests in `ExamineCommandTests.cs` providing comprehensive coverage.
+
+**Tests Written:**
+- **Registration:** Verb is "examine"; aliases [x, inspect, read]
+- **Error Handling:** Null noun → "Examine what?"; always produces output
+- **Room Discovery:** By exact ID, by partial name, case-insensitive search
+- **Inventory Discovery:** By ID, by partial name
+- **Edge Cases:** Not-found error, no description leakage, room-before-inventory priority, NPC boundary, state mutation guard
+
+**Key Design Decisions:**
+1. **Dedicated test file vs. append:** Created `ExamineCommandTests.cs` (not appended to `CommandTests.cs`). Reason: New `ExamineCommand` is standalone, deserves its own file consistent with `TalkCommandTests.cs`
+
+2. **NPC behavior: not-found error is correct:** `ExamineCommand.FindItem` only searches `CurrentRoom.Items` and `Inventory`. NPCs are not items. Decision: **do not add NPC examine behavior** — that is out of scope for this command. Test `Execute_NpcInRoom_ButNoMatchingItem_ShowsNotFoundError` guards this boundary.
+
+3. **Room-before-inventory priority:** Test `Execute_SameIdInRoomAndInventory_ReturnsRoomItemFirst` documents and locks in the `Concat(Inventory)` behavior.
+
+4. **ANSI transparency via OutputContains:** Tests use `io.OutputContains()` which does case-insensitive substring matching. ANSI codes in output don't interfere with assertions.
+
+5. **State mutation test added:** Test `Execute_DoesNotMutateInventoryOrRoom` guards against accidental side effects. Examine is a pure read operation.
+
+**Total Tests:** 227 (211 pre-existing + 16 new ExamineCommand tests)
+
+---
+
 ## Summary
 
 All major decisions documented and deduped. Team achieved:
 - ✅ Clean architecture with testability first
 - ✅ Rich cyberpunk narrative integrated with core mechanics
-- ✅ Comprehensive test coverage (205 tests)
+- ✅ Comprehensive test coverage (227 tests)
 - ✅ Full implementation matching architecture and passing all tests
 - ✅ JSON as sole world source, dead code removed
+- ✅ Save/load state corruption fixed
+- ✅ NPC-met narrator flags functional
+- ✅ ExamineCommand fully tested
 - ⚠️ 12 improvement issues identified for v0.3 and beyond

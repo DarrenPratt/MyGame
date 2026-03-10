@@ -93,8 +93,11 @@
 - **ExamineCommandTests.cs**: River had already written 16 new ExamineCommand tests locally; they were untracked and got picked up in the commit. 227 tests pass.
 - **PR**: #61 on DarrenPratt/MyGame
 
-## Team Updates
+### Session 11 — Scribe Orchestration (2026-03-10T19:15:00Z)
 
-- **2026-03-10 — River validated restart feature:** 6 new TryAgainTests.cs tests cover all restart branches and backward compat. Banner line count detects session restart cleanly. All 205 tests passing.
-- **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 5 assigned to Judy: #31 (duplicate FindItem), #39 (Parser.cs wrapper), #42 (TakeCommand hardcoded text), #47 (Save/Load DroneThreatLevel P1), #52 (TalkCommand flags P1), #55 (GoCommand hardcoded win logic P1). Critical issues identified in save/load and game state persistence.
+- **Orchestration logs created**: Recorded Judy's viktor_met flag fix and River's ExamineCommand test coverage
+- **Session log written**: Comprehensive summary of parallel Issue #46 and Issue #38 work (227 tests passing)
+- **Decisions merged**: All four inbox decision files (judy-viktor-met-flag, judy-save-load-fix, river-examine-tests, river-save-load-tests) merged into decisions.md; inbox files deleted
+- **Agent histories updated**: Judy and River histories append with session 11 summaries
+- **Git commit prepared**: .squad/ changes staged and committed with CoAuthor trailer
 
