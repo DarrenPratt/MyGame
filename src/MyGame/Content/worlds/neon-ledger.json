@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "Neon Ledger",
   "subtitle": "A Cyberpunk Text Adventure",
   "introText": "You've been hired to infiltrate SynthCorp's data vaults and retrieve stolen research. Your fixer's last message burns on your wrist terminal: \"Package in the corp system. Get in, get the drive, get out.\"\n\nYou're in the alley behind The Byte Bar, neon shadows stretching across wet pavement. The data drive worth your life—and someone else's death—waits in the server room. Security won't stop you. The drones will.\n\nMake your move, runner.",
@@ -439,7 +439,8 @@
       "description": "A sleek data drive etched with corporate security markers. It contains the research data that could expose SynthCorp's illegal neural implant experiments. This is what you came for. Years of work, dead contacts, all leading to this moment.",
       "canPickUp": true,
       "useTargetId": null,
-      "useMessage": null
+      "useMessage": null,
+      "takeMessage": "Your hand trembles as you pocket the drive. Years of work, dead contacts, all leading to this moment."
     },
     {
       "id": "repair_kit",
