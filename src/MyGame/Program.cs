@@ -25,6 +25,7 @@ registry.Register(new QuitCommand());
 registry.Register(new TalkCommand());
 registry.Register(new SaveCommand());
 registry.Register(new LoadCommand());
+registry.Register(new StatsCommand());
 
 var engine = new GameEngine(state, registry, new ConsoleIO(), loaded,
     () => new JsonWorldLoader().Load(worldPath).State);
