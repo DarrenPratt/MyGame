@@ -19,7 +19,7 @@ public class LookCommand : ICommand
                 io.WriteLine(item.Description);
                 return;
             }
-            io.WriteLine($"You don't see any \"{command.Noun}\" here.");
+            io.WriteLine(ColorConsole.Error($"You don't see any \"{command.Noun}\" here."));
             return;
         }
 
@@ -36,7 +36,7 @@ public class LookCommand : ICommand
         var description = state is null ? room.Description : NarratorEngine.GetDescription(room, state);
         io.WriteLine($"\n{ColorConsole.BoldCyan(room.Name)}");
         io.WriteLine(ColorConsole.Cyan(new string('─', room.Name.Length)));
-        io.WriteLine(description);
+        io.WriteLine(ColorConsole.RoomDescription(description));
 
         if (room.Items.Count > 0)
         {

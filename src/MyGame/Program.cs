@@ -2,6 +2,8 @@ using MyGame.Engine;
 using MyGame.Commands;
 using MyGame.Content;
 
+ColorConsole.Initialize();
+
 var worldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "worlds", "neon-ledger.json");
 
 LoadedWorld? loaded = null;
