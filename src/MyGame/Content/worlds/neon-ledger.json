@@ -177,6 +177,13 @@
       "narratorVariants": [
         {
           "requiredFlags": [
+            "viktor_gave_intel"
+          ],
+          "requiredInventoryItems": [],
+          "description": "Viktor's tip resonates as you face the checkpoint: these guards are greedy corp-sec with a price. You study them differently now, watching for weakness. The right leverage could walk you straight through."
+        },
+        {
+          "requiredFlags": [
             "guard_distracted"
           ],
           "requiredInventoryItems": [],
@@ -260,14 +267,14 @@
     {
       "id": "corridor",
       "name": "Service Corridor",
-      "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A back exit sign glows faintly at the far end.",
+      "description": "A narrow, dimly lit corridor runs behind the main lobby. Pipes and cable conduits line the walls, humming with power. Emergency lighting casts everything in sickly green. The air is warm and stale, smelling of ozone and machine oil. This is the worker's route—maintenance staff and low-level corp drones use these passages to move unseen. A darkened security panel is mounted near the east exit, its screen cracked and dormant. A back exit sign glows faintly at the far end.",
       "narratorVariants": [
         {
           "requiredFlags": [
             "visit_count_gt_1"
           ],
           "requiredInventoryItems": [],
-          "description": "The service corridor is a second home now. Familiar pipes, familiar stench of ozone. A maintenance drone passes without acknowledgment—you're part of the system now. The green emergency lights feel less alien, more like camouflage."
+          "description": "The service corridor is a second home now. Familiar pipes, familiar stench of ozone. A maintenance drone passes without acknowledgment—you're part of the system now. The green emergency lights feel less alien, more like camouflage. That broken panel still sits dark and useless."
         },
         {
           "requiredFlags": [
@@ -276,7 +283,7 @@
           "requiredInventoryItems": [
             "drive"
           ],
-          "description": "The drive is burning in your pocket. These passages suddenly feel like the only path to freedom. The back exit sign glows brighter now, like a beacon. Every moment in this corridor is borrowed time."
+          "description": "The drive is burning in your pocket. These passages suddenly feel like the only path to freedom. The back exit sign glows brighter now, like a beacon. The security panel near the exit flickers weakly—if it worked, it might give you control. Every moment in this corridor is borrowed time."
         }
       ],
       "exits": [
@@ -288,7 +295,9 @@
           "description": null
         }
       ],
-      "itemIds": [],
+      "itemIds": [
+        "security_panel"
+      ],
       "npcIds": []
     },
     {
@@ -368,9 +377,7 @@
           "description": null
         }
       ],
-      "itemIds": [
-        "repair_kit"
-      ],
+      "itemIds": [],
       "npcIds": []
     },
     {
@@ -447,8 +454,8 @@
       "name": "Black-Market Repair Kit",
       "description": "A weathered case containing tools and spare parts—salvage from a dozen dead runs. The undercity thrives on repurposed tech and jury-rigged repairs. This kit represents hours of work by someone trying to survive the corpo dystopia. It's a relic of the underground economy.",
       "canPickUp": true,
-      "useTargetId": null,
-      "useMessage": "You turn the kit over in your hands. Whatever this was meant to fix, it tells a story—scavenged parts, crude welds, ingenuity born from desperation. Down here, broken things become tools. Tools become leverage. Leverage becomes freedom."
+      "useTargetId": "security_panel",
+      "useMessage": "You approach the broken security panel and open the kit. Your hands move with practiced precision—installing circuit boards, rewiring junction points, splicing cables with a jury-rigged finesse. The panel flickers, then glows. A soft beep signals success. Whatever secrets this system was guarding, you just bought yourself a moment of control in the machine."
     },
     {
       "id": "cred_chip",
@@ -457,6 +464,14 @@
       "canPickUp": true,
       "useTargetId": "north",
       "useMessage": "You slide the cred chip across the desk. The guard's eyes light up—this is enough to make him very cooperative. The locked door to the north slides open silently."
+    },
+    {
+      "id": "security_panel",
+      "name": "Broken Security Panel",
+      "description": "A wall-mounted security panel, its screen cracked and dark. Exposed circuitry dangles from the open casing, and several components are clearly burned out. This system once controlled access and monitoring in the corridor, but it's been dead for months. Someone with the right tools and knowledge could potentially restore it.",
+      "canPickUp": false,
+      "useTargetId": null,
+      "useMessage": null
     }
   ],
   "npcs": [
@@ -499,7 +514,8 @@
               "text": "Thanks for the info.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "viktor_gave_intel"
         },
         {
           "id": "rooftops",
@@ -582,7 +598,8 @@
               "text": "Thanks for the help.",
               "nextNodeId": "thanks"
             }
-          ]
+          ],
+          "setsFlag": "mox_gave_intel"
         },
         {
           "id": "undercity",
