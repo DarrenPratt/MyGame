@@ -99,6 +99,12 @@ public class GameEngine
                 if (warning is not null)
                     _io.WriteLine(ColorConsole.Error(warning));
             }
+            else if (_state.IsRunning)
+            {
+                var decay = _droneSystem.TryDecay();
+                if (decay is not null)
+                    _io.WriteLine(ColorConsole.Flavor(decay));
+            }
         }
 
         _io.WriteLine("");
