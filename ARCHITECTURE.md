@@ -1,7 +1,7 @@
 # MyGame — Architecture Document
 
-> **Cyberpunk Text Adventure** · C# / .NET 8 · Console Application
-> Architect: Johnny · Created: 2025-07-14
+> **Cyberpunk Text Adventure** · C# / .NET 8+ · Console Application  
+> Architect: Johnny · Updated: 2026-03-10
 
 ---
 
@@ -11,46 +11,64 @@
 MyGame/
 ├── ARCHITECTURE.md
 ├── src/
-│   └── MyGame/
-│       ├── MyGame.csproj              # Console app, net8.0
-│       ├── Program.cs                 # Entry point
+│   ├── MyGame/                       # Main game executable
+│   │   ├── MyGame.csproj             # net8.0 console app
+│   │   ├── Program.cs                # Entry point
+│   │   ├── Engine/
+│   │   │   ├── GameState.cs          # All mutable game state
+│   │   │   ├── GameEngine.cs         # Main loop, restart-on-death, session mgmt
+│   │   │   ├── CommandParser.cs      # Raw input → ParsedCommand
+│   │   │   ├── GameMessages.cs       # All UI/narrative strings (centralized)
+│   │   │   ├── GameStateExtensions.cs # Shared FindItem, FindRoomItem helpers
+│   │   │   ├── NarratorEngine.cs     # Dynamic description selection by flags
+│   │   │   ├── ColorConsole.cs       # Colored output + Windows ANSI support
+│   │   │   └── JsonWorldLoader.cs    # Load game world from JSON
+│   │   ├── Commands/
+│   │   │   ├── ICommand.cs           # Command interface
+│   │   │   ├── CommandRegistry.cs    # Maps verb → ICommand
+│   │   │   ├── GoCommand.cs          # Movement + win condition
+│   │   │   ├── LookCommand.cs        # Room inspection + NPC listing
+│   │   │   ├── ExamineCommand.cs     # Examine items/NPCs
+│   │   │   ├── TakeCommand.cs        # Pick up item
+│   │   │   ├── DropCommand.cs        # Drop item
+│   │   │   ├── InventoryCommand.cs   # List inventory
+│   │   │   ├── UseCommand.cs         # Use item (unlock exits, etc.)
+│   │   │   ├── TalkCommand.cs        # NPC dialogue + flag setting
+│   │   │   ├── SaveCommand.cs        # Save game state + locks/threat
+│   │   │   ├── LoadCommand.cs        # Load saved game
+│   │   │   ├── HelpCommand.cs        # Command list
+│   │   │   └── QuitCommand.cs        # Graceful exit
+│   │   └── Models/
+│   │       ├── Room.cs               # Room with Exits, Items, NPCs, Variants
+│   │       ├── Exit.cs               # Directional link (locked/unlocked)
+│   │       ├── Item.cs               # Pickuppable object
+│   │       ├── Npc.cs                # NPC with dialogue tree
+│   │       ├── DialogueNode.cs       # Single dialogue message + choices
+│   │       ├── DialogueResponse.cs   # Player choice
+│   │       └── NarratorVariant.cs    # Conditional room description
+│   │
+│   └── MyGame.Tests/                 # Test suite (227+ tests)
+│       ├── MyGame.Tests.csproj       # net10.0 xUnit project
+│       ├── Helpers/
+│       │   ├── FakeInputOutput.cs    # Test harness for I/O
+│       │   └── WorldFactory.cs       # Test world builder
 │       ├── Engine/
-│       │   ├── GameState.cs           # All mutable game state
-│       │   ├── GameEngine.cs          # Main game loop & orchestration
-│       │   └── CommandParser.cs       # Raw input → parsed command
+│       │   ├── GameStateTests.cs
+│       │   ├── ParserTests.cs
+│       │   └── NarratorEngineTests.cs
 │       ├── Commands/
-│       │   ├── ICommand.cs            # Command interface
-│       │   ├── CommandRegistry.cs     # Maps verbs → ICommand
-│       │   ├── LookCommand.cs
-│       │   ├── GoCommand.cs
-│       │   ├── TakeCommand.cs
-│       │   ├── DropCommand.cs
-│       │   ├── InventoryCommand.cs
-│       │   ├── UseCommand.cs
-│       │   ├── HelpCommand.cs
-│       │   └── QuitCommand.cs
-│       ├── Models/
-│       │   ├── Room.cs                # Room definition
-│       │   ├── Item.cs                # Item definition
-│       │   └── Exit.cs                # Directional link between rooms
-│       └── Content/
-│           └── WorldBuilder.cs        # Builds all rooms, items, exits
-└── tests/
-    └── MyGame.Tests/
-        ├── MyGame.Tests.csproj        # xUnit test project
-        ├── Engine/
-        │   ├── GameStateTests.cs
-        │   ├── GameEngineTests.cs
-        │   └── CommandParserTests.cs
-        ├── Commands/
-        │   ├── LookCommandTests.cs
-        │   ├── GoCommandTests.cs
-        │   ├── TakeCommandTests.cs
-        │   ├── DropCommandTests.cs
-        │   ├── InventoryCommandTests.cs
-        │   └── UseCommandTests.cs
-        └── Content/
-            └── WorldBuilderTests.cs
+│       │   ├── CommandTests.cs       # Generic command harness
+│       │   ├── ExamineCommandTests.cs
+│       │   ├── TalkCommandTests.cs
+│       │   └── [other command tests]
+│       ├── SaveLoadTests.cs          # Game persistence
+│       ├── JsonWorldLoaderTests.cs   # World file loading
+│       ├── GameIntegrationTests.cs   # End-to-end flows
+│       ├── GameWorldTests.cs         # Room/exit/item integrity
+│       ├── DroneTests.cs             # Drone threat system
+│       ├── TryAgainTests.cs          # Restart-on-death feature
+│       ├── EdgeCaseTests.cs          # Boundary conditions
+│       └── [other test files]
 ```
 
 ### Project files
@@ -67,11 +85,11 @@ MyGame/
 </Project>
 ```
 
-**tests/MyGame.Tests/MyGame.Tests.csproj**
+**src/MyGame.Tests/MyGame.Tests.csproj**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -81,186 +99,321 @@ MyGame/
     <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MyGame\MyGame.csproj" />
+    <ProjectReference Include="..\MyGame\MyGame.csproj" />
   </ItemGroup>
 </Project>
 ```
 
 ---
 
-## 2. Models
+## 2. Core Models
 
 ### Room
 
 ```csharp
-namespace MyGame.Models;
-
 public class Room
 {
-    public required string Id { get; init; }           // e.g. "alley", "bar", "rooftop"
-    public required string Name { get; init; }         // e.g. "Neon Alley"
-    public required string Description { get; init; }  // Full room description
-    public Dictionary<string, Exit> Exits { get; } = new();  // "north" → Exit
-    public List<Item> Items { get; } = new();          // Items on the ground
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public Dictionary<string, Exit> Exits { get; } = new();
+    public List<Item> Items { get; } = new();
+    public List<NarratorVariant> NarratorVariants { get; init; } = new();
+    public List<Npc> Npcs { get; init; } = new();
 }
 ```
+
+Rooms hold **exits** (to other rooms), **items** (on the ground), **NPCs** (characters), and **narrator variants** (conditional descriptions based on game state).
 
 ### Exit
 
 ```csharp
-namespace MyGame.Models;
-
 public class Exit
 {
-    public required string Direction { get; init; }     // "north", "south", "east", "west", "up", "down"
-    public required string TargetRoomId { get; init; }  // Id of destination room
-    public string? Description { get; init; }           // Optional: "A rusty fire escape leads up."
-    public bool IsLocked { get; set; }                  // Can be unlocked by game logic
-    public string? RequiredItemId { get; set; }         // Item needed to unlock (null = not locked)
+    public required string Direction { get; init; }   // "north", "south", etc.
+    public required string TargetRoomId { get; init; }
+    public string? Description { get; init; }
+    public bool IsLocked { get; set; }
+    public string? RequiredItemId { get; set; }       // Item needed to unlock
 }
 ```
+
+Exits can be locked and require an item to unlock (e.g., keycard).
 
 ### Item
 
 ```csharp
-namespace MyGame.Models;
-
 public class Item
 {
-    public required string Id { get; init; }            // e.g. "keycard", "pistol"
-    public required string Name { get; init; }          // e.g. "Corp Keycard"
-    public required string Description { get; init; }   // Examine text
-    public bool CanPickUp { get; init; } = true;        // Some items are scenery
-    public string? UseTargetId { get; init; }           // What this item interacts with (exit id, item id, etc.)
-    public string? UseMessage { get; init; }            // Message shown when item is used successfully
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public bool CanPickUp { get; init; } = true;
+    public string? UseTargetId { get; init; }         // Exit or item to interact with
+    public string? UseMessage { get; init; }
 }
 ```
 
+### Npc
+
+```csharp
+public class Npc
+{
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public List<DialogueNode> Dialogue { get; init; } = new();
+}
+
+public class DialogueNode
+{
+    public required string Id { get; init; }
+    public required string Text { get; init; }
+    public List<DialogueResponse> Responses { get; init; } = new();
+}
+
+public class DialogueResponse
+{
+    public required string Text { get; init; }
+    public string? NextNodeId { get; init; }
+}
+```
+
+NPCs have **dialogue trees**. When talked to, `TalkCommand` sets the `{npc_id}_met` flag.
+
+### NarratorVariant
+
+```csharp
+public class NarratorVariant
+{
+    public required string Description { get; init; }
+    public List<string> RequiredFlags { get; init; } = new();
+    public List<string> RequiredInventoryItems { get; init; } = new();
+}
+```
+
+Allows dynamic room descriptions. `NarratorEngine.GetDescription()` selects the most specific variant (highest combined flag + item count) where all requirements are met.
+
 ---
 
-## 3. Engine
+## 3. Engine Systems
 
 ### GameState
 
-Holds **all** mutable state. Pure data — no logic. This makes it easy to test and serialize later.
+Holds **all** mutable game state. Pure data, no logic.
 
 ```csharp
-namespace MyGame.Engine;
-
-using MyGame.Models;
-
 public class GameState
 {
     public required string CurrentRoomId { get; set; }
     public List<Item> Inventory { get; } = new();
-    public HashSet<string> Flags { get; } = new();      // e.g. "door_unlocked", "talked_to_fixer"
+    public HashSet<string> Flags { get; } = new();    // e.g. "viktor_met", "door_unlocked"
     public bool IsRunning { get; set; } = true;
     public bool HasWon { get; set; }
-
+    public bool HasLost { get; set; } = false;
+    public int DroneThreatLevel { get; set; } = 0;
+    public HashSet<string> HighRiskRoomIds { get; init; } = new() { "plaza", "checkpoint" };
+    public int DroneThreatThreshold { get; set; } = 4;
+    public string? WinRoomId { get; set; } = "server";
+    
+    public Dictionary<string, Item> ItemCatalog { get; init; }
+    public Dictionary<string, Npc> NpcCatalog { get; init; }
     public required Dictionary<string, Room> Rooms { get; init; }
-
     public Room CurrentRoom => Rooms[CurrentRoomId];
 }
 ```
 
-**Flags** are simple string tags. Commands set them when events happen (e.g., unlocking a door). This keeps the state model flat and extensible without an event system.
+**Key fields:**
+- `DroneThreatLevel` / `DroneThreatThreshold` — drone surveillance mechanic
+- `HighRiskRoomIds` — zones where drones increment threat each turn
+- `Flags` — dynamic state for NPC meeting, door unlocking, etc.
+- `ItemCatalog` / `NpcCatalog` — global lookups for quick access
 
-### CommandParser
+### GameEngine & Game Loop
 
-Splits raw input into a verb and an optional noun. No intelligence — just string splitting.
+The engine now supports **restart-on-death** via an optional `stateFactory` delegate.
 
 ```csharp
-namespace MyGame.Engine;
-
-public record ParsedCommand(string Verb, string? Noun);
-
-public static class CommandParser
+public class GameEngine
 {
-    public static ParsedCommand Parse(string input)
+    private GameState _state;                           // Mutable, replaced on restart
+    private readonly Func<GameState>? _stateFactory;    // Optional restart factory
+    private readonly LoadedWorld? _world;               // World metadata + messages
+    private readonly CommandRegistry _commands;
+    private readonly IInputOutput _io;
+    
+    public GameEngine(GameState state, CommandRegistry commands, IInputOutput io,
+                      LoadedWorld? world = null, Func<GameState>? stateFactory = null)
+    { ... }
+
+    public void Run()  // Outer loop: handles restart
     {
-        // Trim, lowercase, split on first space
-        // "go north" → ("go", "north")
-        // "look"     → ("look", null)
-        // "take keycard" → ("take", "keycard")
+        while (true)
+        {
+            RunSession();  // Play one game
+            
+            if (_state.HasLost && _stateFactory is not null)
+            {
+                // Prompt to try again
+                var answer = _io.ReadLine();  // "y" to restart
+                if (answer?.StartsWith("y", OrdinalIgnoreCase) == true)
+                {
+                    _state = _stateFactory();  // Fresh state
+                    continue;
+                }
+            }
+            break;
+        }
+    }
+
+    private void RunSession()  // Inner loop: one game lifetime
+    {
+        // Render banner from LoadedWorld or defaults
+        // Show intro text
+        // Execute "look" to describe starting room
         
-        var trimmed = input.Trim().ToLowerInvariant();
-        if (string.IsNullOrEmpty(trimmed))
-            return new ParsedCommand("", null);
-
-        var spaceIndex = trimmed.IndexOf(' ');
-        if (spaceIndex < 0)
-            return new ParsedCommand(trimmed, null);
-
-        var verb = trimmed[..spaceIndex];
-        var noun = trimmed[(spaceIndex + 1)..].Trim();
-        return new ParsedCommand(verb, string.IsNullOrEmpty(noun) ? null : noun);
+        while (_state.IsRunning)
+        {
+            var input = _io.ReadLine();  // "> "
+            var parsed = CommandParser.Parse(input);
+            _commands.Execute(parsed, _state, _io);
+            
+            // Drone threat check (after every command in high-risk rooms)
+            if (_state.HighRiskRoomIds.Contains(_state.CurrentRoomId))
+            {
+                _state.DroneThreatLevel++;
+                // Show warnings at levels 1, 2, 3
+                // Die at threshold (≥4)
+            }
+        }
+        
+        // End-of-session: show win/lose/quit message
     }
 }
 ```
 
-### GameEngine
+**Drone Threat System:**
+- Each turn in "plaza" or "checkpoint" increments threat counter
+- At threshold (default 4), `HasLost = true`, game ends
+- Save/load persists threat level
 
-Orchestrates the game loop. Depends on `IInputOutput` for testability — no direct `Console` calls.
+### NarratorEngine
+
+Provides **context-aware room descriptions** based on game state.
 
 ```csharp
-namespace MyGame.Engine;
-
-using MyGame.Commands;
-
-public interface IInputOutput
+public static class NarratorEngine
 {
-    string? ReadLine();
-    void WriteLine(string text);
-    void Write(string text);
-}
-
-public class ConsoleIO : IInputOutput
-{
-    public string? ReadLine() => Console.ReadLine();
-    public void WriteLine(string text) => Console.WriteLine(text);
-    public void Write(string text) => Console.Write(text);
-}
-
-public class GameEngine
-{
-    private readonly GameState _state;
-    private readonly CommandRegistry _commands;
-    private readonly IInputOutput _io;
-
-    public GameEngine(GameState state, CommandRegistry commands, IInputOutput io)
+    public static string GetDescription(Room room, GameState state)
     {
-        _state = state;
-        _commands = commands;
-        _io = io;
+        var variant = GetVariant(room, state);
+        return variant?.Description ?? room.Description;
     }
 
-    public void Run()
+    public static NarratorVariant? GetVariant(Room room, GameState state)
     {
-        _io.WriteLine("=== NEON SHADOWS ===");
-        _io.WriteLine("A cyberpunk text adventure.\n");
-
-        // Show initial room
-        _commands.Execute(new ParsedCommand("look", null), _state, _io);
-
-        while (_state.IsRunning)
-        {
-            _io.Write("\n> ");
-            var input = _io.ReadLine();
-            if (input is null)
-                break;
-
-            var parsed = CommandParser.Parse(input);
-            if (string.IsNullOrEmpty(parsed.Verb))
-                continue;
-
-            _commands.Execute(parsed, _state, _io);
-        }
-
-        if (_state.HasWon)
-            _io.WriteLine("\n*** YOU WIN. The neon city is yours. ***\n");
-        else
-            _io.WriteLine("\n*** JACKED OUT. See you in the sprawl. ***\n");
+        // Find most specific variant where all RequiredFlags and items match
+        return room.NarratorVariants
+            .Where(v => v.RequiredFlags.All(f => state.Flags.Contains(f))
+                     && v.RequiredInventoryItems.All(id => state.Inventory.Any(i => i.Id == id)))
+            .OrderByDescending(v => v.RequiredFlags.Count + v.RequiredInventoryItems.Count)
+            .FirstOrDefault();
     }
+}
+```
+
+Used by `LookCommand` and `GoCommand` to show tailored descriptions.
+
+### GameMessages
+
+All **player-facing strings** centralized in one static class — no hardcoded text in commands.
+
+```csharp
+public static class GameMessages
+{
+    public static class Defaults
+    {
+        public const string Title = "N E O N   L E D G E R";
+        public const string Subtitle = "A Cyberpunk Text Adventure";
+        public const string IntroText = "...";
+    }
+    
+    public static class Prompts
+    {
+        public const string CommandInput = "\n> ";
+        public const string DialogueInput = "> ";
+        public const string TryAgain = "\nTry again? (yes/no) ";
+    }
+    
+    public static class Drone
+    {
+        public const string Warning1 = "A drone sweeps overhead...";
+        public const string Warning2 = "Drone targeting systems...";
+        public const string Warning3 = "CRITICAL: Drone lock acquired...";
+    }
+    
+    public static class Win { ... }
+    public static class Lose { ... }
+    public static class Talk { ... }
+    public static class Go { ... }
+    // ... other command-specific messages
+}
+```
+
+### ColorConsole
+
+Handles **colored output** and **Windows ANSI support**.
+
+```csharp
+public static class ColorConsole
+{
+    public static void Initialize() { /* P/Invoke ENABLE_VIRTUAL_TERMINAL_PROCESSING */ }
+    
+    public static string Cyan(string text) => $"\x1b[96m{text}\x1b[0m";
+    public static string RoomDescription(string text) => Cyan(text);
+    public static string Error(string text) => $"\x1b[31m{text}\x1b[0m";
+    public static string Yellow(string text) => ...;
+    public static string Magenta(string text) => ...;
+    // ... and primitives (BoldCyan, DarkGray, Prompt, etc.)
+}
+```
+
+### GameStateExtensions
+
+Shared **item lookup helpers** to avoid duplication across commands.
+
+```csharp
+public static class GameStateExtensions
+{
+    public static Item? FindItem(this GameState state, string itemId);
+    public static Item? FindRoomItem(this GameState state, string itemId);
+    public static Item? FindInventoryItem(this GameState state, string itemId);
+}
+```
+
+### JsonWorldLoader
+
+Loads a **world from JSON** and builds a fresh `GameState`.
+
+```csharp
+public class JsonWorldLoader
+{
+    public LoadedWorld Load(string path)
+    {
+        var json = File.ReadAllText(path);
+        var data = JsonSerializer.Deserialize<WorldData>(json);
+        return new LoadedWorld { State = ..., Title = ..., Subtitle = ..., IntroText = ... };
+    }
+}
+
+public class LoadedWorld
+{
+    public GameState State { get; init; }
+    public string Title { get; init; }
+    public string Subtitle { get; init; }
+    public string IntroText { get; init; }
+    public string WinMessage { get; init; }
+    public string LoseMessage { get; init; }
 }
 ```
 
@@ -268,31 +421,25 @@ public class GameEngine
 
 ## 4. Command System
 
-### ICommand
+### ICommand Interface
 
 ```csharp
-namespace MyGame.Commands;
-
-using MyGame.Engine;
-
 public interface ICommand
 {
     string Verb { get; }
-    string[] Aliases => [];             // Optional aliases (e.g., "l" for "look")
-    string HelpText { get; }            // One-line description for help screen
+    string[] Aliases => [];
+    string HelpText { get; }
     void Execute(ParsedCommand command, GameState state, IInputOutput io);
 }
 ```
 
+All commands implement this simple contract. Aliases support shortcuts (e.g., "n" for "north").
+
 ### CommandRegistry
 
-Maps verb strings to `ICommand` implementations. Supports aliases.
+Maps verb strings (including aliases) to ICommand implementations.
 
 ```csharp
-namespace MyGame.Commands;
-
-using MyGame.Engine;
-
 public class CommandRegistry
 {
     private readonly Dictionary<string, ICommand> _commands = new();
@@ -316,277 +463,67 @@ public class CommandRegistry
 }
 ```
 
-### Command Implementations
+### Available Commands
 
-Each command is a small, focused class. Here are the signatures and key behaviors:
+| Command | Aliases | Purpose |
+|---------|---------|---------|
+| **look** | `l` | Describe current room, list exits/items/NPCs |
+| **go** | `north, south, east, west, up, down, n, s, e, w, u, d` | Move between rooms (checks locks) |
+| **examine** | `x` | Examine item or NPC in detail |
+| **take** | `get, pick, grab` | Pick up an item (respects `CanPickUp`) |
+| **drop** | | Drop item from inventory |
+| **inventory** | `inv, i` | List what you're carrying |
+| **use** | | Use an item (unlocks exits, triggers flags) |
+| **talk** | `speak` | Talk to NPC, navigate dialogue tree; sets `{npc_id}_met` flag |
+| **save** | | Save game to JSON (persists threat, locks, flags) |
+| **load** | | Load game from JSON |
+| **help** | `?, commands` | List all commands |
+| **quit** | `exit, q` | Exit the game |
 
-#### LookCommand
-
-```csharp
-public class LookCommand : ICommand
-{
-    public string Verb => "look";
-    public string[] Aliases => ["l"];
-    public string HelpText => "Look around the current room.";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // If noun is null: describe room, list exits, list items on ground
-        // If noun matches an item (in room or inventory): show item description
-    }
-}
-```
-
-#### GoCommand
-
-```csharp
-public class GoCommand : ICommand
-{
-    public string Verb => "go";
-    public string[] Aliases => ["north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"];
-    public string HelpText => "Move in a direction. Usage: go <direction>";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // Determine direction from noun (if verb is "go") or from verb itself (if "north", etc.)
-        // Check if exit exists and is not locked
-        // If locked, tell player what they need
-        // Otherwise move player and auto-look
-    }
-}
-```
-
-#### TakeCommand
-
-```csharp
-public class TakeCommand : ICommand
-{
-    public string Verb => "take";
-    public string[] Aliases => ["get", "pick", "grab"];
-    public string HelpText => "Pick up an item. Usage: take <item>";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // Find item by id or name (case-insensitive) in current room
-        // Check CanPickUp
-        // Remove from room, add to inventory
-    }
-}
-```
-
-#### DropCommand
-
-```csharp
-public class DropCommand : ICommand
-{
-    public string Verb => "drop";
-    public string HelpText => "Drop an item from your inventory. Usage: drop <item>";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // Find item in inventory, move to current room
-    }
-}
-```
-
-#### InventoryCommand
-
-```csharp
-public class InventoryCommand : ICommand
-{
-    public string Verb => "inventory";
-    public string[] Aliases => ["inv", "i"];
-    public string HelpText => "Show what you're carrying.";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // List items in inventory or "You're carrying nothing."
-    }
-}
-```
-
-#### UseCommand
-
-```csharp
-public class UseCommand : ICommand
-{
-    public string Verb => "use";
-    public string HelpText => "Use an item. Usage: use <item>";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // Find item in inventory
-        // Check UseTargetId — does it match an exit or flag in current context?
-        // If exit: unlock it, set flag, show UseMessage
-        // If flag-based: set the flag, show UseMessage
-        // Enables win condition checks
-    }
-}
-```
-
-#### HelpCommand
-
-```csharp
-public class HelpCommand : ICommand
-{
-    public string Verb => "help";
-    public string[] Aliases => ["?", "commands"];
-    public string HelpText => "Show available commands.";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        // Iterate AllCommands on the registry, print Verb + HelpText
-    }
-}
-```
-
-*Note: HelpCommand needs a reference to CommandRegistry. Pass it in via constructor.*
-
-#### QuitCommand
-
-```csharp
-public class QuitCommand : ICommand
-{
-    public string Verb => "quit";
-    public string[] Aliases => ["exit", "q"];
-    public string HelpText => "Quit the game.";
-
-    public void Execute(ParsedCommand command, GameState state, IInputOutput io)
-    {
-        state.IsRunning = false;
-    }
-}
-```
+**Key behaviors:**
+- **LookCommand** uses `NarratorEngine.GetDescription()` for dynamic room text
+- **GoCommand** checks exit locks, handles win condition (entering server room), calls `LookCommand` to auto-describe new room
+- **TalkCommand** navigates dialogue tree and **sets `{npc_id}_met` flag** (Issue #46)
+- **ExamineCommand** shows `Item.Description` or `Npc.Description`
+- **SaveCommand** persists `DroneThreatLevel`, `DroneThreatThreshold`, `ExitLockStates` (Issue #35)
+- **LoadCommand** restores all state from JSON
 
 ---
 
-## 5. Content / World Building
+## 5. Save/Load Format
 
-### WorldBuilder
+SaveCommand serializes to JSON. The format includes:
 
-A static factory that constructs the game world. Hardcoded for v1 — simple and easy to test.
-
-```csharp
-namespace MyGame.Content;
-
-using MyGame.Models;
-using MyGame.Engine;
-
-public static class WorldBuilder
+```json
 {
-    public static GameState Build()
-    {
-        var rooms = CreateRooms();
-        LinkRooms(rooms);
-        PlaceItems(rooms);
-
-        return new GameState
-        {
-            CurrentRoomId = "alley",
-            Rooms = rooms
-        };
-    }
-
-    private static Dictionary<string, Room> CreateRooms() { ... }
-    private static void LinkRooms(Dictionary<string, Room> rooms) { ... }
-    private static void PlaceItems(Dictionary<string, Room> rooms) { ... }
+  "CurrentRoomId": "server",
+  "Inventory": ["keycard"],
+  "Flags": ["viktor_met", "server_unlocked"],
+  "DroneThreatLevel": 3,
+  "DroneThreatThreshold": 4,
+  "ExitLockStates": {
+    "lobby": { "north": false },
+    "bar": { "east": true }
+  }
 }
 ```
 
-### V1 World Map
-
-```
-                    ┌─────────────┐
-                    │  Rooftop    │
-                    │  (rooftop)  │
-                    └──────┬──────┘
-                           │ down
-                           │
-┌─────────────┐  east  ┌──┴──────────┐  east  ┌─────────────┐
-│  Neon Alley │───────►│  The Byte   │───────►│  Corp Lobby │
-│  (alley)    │◄───────│  Bar (bar)  │◄───────│  (lobby)    │
-│  [START]    │  west  └─────────────┘  west  └──────┬──────┘
-└─────────────┘                                      │ north
-                                                     │ (LOCKED)
-                                              ┌──────┴──────┐
-                                              │  Server Room│
-                                              │  (server)   │
-                                              │  [WIN]      │
-                                              └─────────────┘
-```
-
-**Rooms:**
-| Id | Name | Notes |
-|---|---|---|
-| `alley` | Neon Alley | Start room. Gritty back alley. |
-| `bar` | The Byte Bar | Seedy dive bar. Fixer NPC flavor text. |
-| `rooftop` | Rooftop | Above the bar. Has the keycard. |
-| `lobby` | Corp Lobby | Sterile corporate building. Locked door north. |
-| `server` | Server Room | Win condition room. Reaching here = victory. |
-
-**Items:**
-| Id | Name | Location | Notes |
-|---|---|---|---|
-| `keycard` | Corp Keycard | rooftop | Unlocks lobby→server door |
-| `flyer` | Crumpled Flyer | alley | Flavor item, hints at bar |
-| `terminal` | Broken Terminal | bar | Scenery (CanPickUp = false) |
-| `drive` | Data Drive | server | Flavor — the prize |
-
-**Win Condition:** Player enters the `server` room. The `GoCommand` checks: if the destination is `server`, set `HasWon = true` and `IsRunning = false`.
+LoadCommand deserializes and rebuilds the `GameState`:
+- Restores inventory references via `ItemCatalog`
+- Restores exit lock states
+- Preserves all flags (narrator variants will re-evaluate)
 
 ---
 
-## 6. Game Loop Flow
+## 6. Game Flow
 
-```
-┌────────────────────────────────────────────────────┐
-│                    Program.Main()                   │
-│  1. WorldBuilder.Build() → GameState               │
-│  2. Create CommandRegistry, register all commands   │
-│  3. Create GameEngine(state, registry, ConsoleIO)   │
-│  4. engine.Run()                                    │
-└───────────────────────┬────────────────────────────┘
-                        ▼
-┌────────────────────────────────────────────────────┐
-│                  GameEngine.Run()                   │
-│  1. Print banner                                    │
-│  2. Execute "look" (show starting room)             │
-│  3. LOOP while state.IsRunning:                     │
-│     a. Print prompt "> "                            │
-│     b. Read input                                   │
-│     c. CommandParser.Parse(input) → ParsedCommand   │
-│     d. CommandRegistry.Execute(parsed, state, io)   │
-│  4. Print win/quit message                          │
-└────────────────────────────────────────────────────┘
-```
-
-### Command Dispatch Flow
-
-```
-User types: "use keycard"
-          ↓
-CommandParser.Parse("use keycard")
-  → ParsedCommand(Verb: "use", Noun: "keycard")
-          ↓
-CommandRegistry.Execute(parsed, state, io)
-  → Looks up "use" → UseCommand
-  → UseCommand.Execute(parsed, state, io)
-    → Finds "keycard" in inventory
-    → Checks UseTargetId → matches exit "server" in lobby
-    → Unlocks the exit, sets flag "server_unlocked"
-    → Prints "You swipe the keycard. The door clicks open."
-```
-
----
-
-## 7. Program.cs (Entry Point)
+### Startup (Program.cs)
 
 ```csharp
-using MyGame.Engine;
-using MyGame.Commands;
-using MyGame.Content;
-
-var state = WorldBuilder.Build();
+var worldPath = "world.json";
+var loader = new JsonWorldLoader();
+var world = loader.Load(worldPath);
+var state = world.State;
 
 var registry = new CommandRegistry();
 registry.Register(new LookCommand());
@@ -594,49 +531,87 @@ registry.Register(new GoCommand());
 registry.Register(new TakeCommand());
 registry.Register(new DropCommand());
 registry.Register(new InventoryCommand());
+registry.Register(new ExamineCommand());
 registry.Register(new UseCommand());
+registry.Register(new TalkCommand());
+registry.Register(new SaveCommand());
+registry.Register(new LoadCommand());
 registry.Register(new HelpCommand(registry));
 registry.Register(new QuitCommand());
 
-var engine = new GameEngine(state, registry, new ConsoleIO());
+var engine = new GameEngine(
+    state,
+    registry,
+    new ConsoleIO(),
+    world: world,
+    stateFactory: () => new JsonWorldLoader().Load(worldPath).State
+);
 engine.Run();
 ```
 
----
+### Game Loop (One Session)
 
-## 8. Testing Strategy
-
-All game logic is testable without `Console`:
-
-- **IInputOutput** is injected — tests provide a mock/stub that feeds input and captures output.
-- **GameState** is a plain object — construct it directly in tests with custom rooms/items.
-- **Commands** are tested individually: create a minimal GameState, call `Execute()`, assert state changes and output.
-- **CommandParser** is a pure function — straightforward input/output tests.
-- **WorldBuilder** can be tested by calling `Build()` and asserting the world is valid (all exits point to real rooms, start room exists, etc.).
-
-Example test pattern:
-```csharp
-[Fact]
-public void GoCommand_MovesPlayerToConnectedRoom()
-{
-    var rooms = new Dictionary<string, Room> { ... };
-    var state = new GameState { CurrentRoomId = "alley", Rooms = rooms };
-    var io = new TestIO();
-    var cmd = new GoCommand();
-
-    cmd.Execute(new ParsedCommand("go", "east"), state, io);
-
-    Assert.Equal("bar", state.CurrentRoomId);
-}
+```
+1. Render title banner (from LoadedWorld or defaults)
+2. Print intro text
+3. Execute "look" to describe starting room
+4. LOOP while IsRunning:
+   a. Print prompt "> "
+   b. Read input
+   c. Parse → CommandRegistry.Execute()
+   d. Post-command: Drone threat check
+      - If in HighRiskRoomId, increment DroneThreatLevel
+      - Show warning at levels 1, 2, 3
+      - Die (HasLost = true) at threshold
+   e. If HasWon or HasLost: break loop
+5. Print win/lose/quit message
+6. Return control to Run() for potential restart
 ```
 
+### Restart Flow (Try-Again)
+
+When a player dies (`HasLost = true`) and `stateFactory` is provided:
+
+```
+1. Show "Try again? (yes/no) " prompt
+2. If "yes": Call stateFactory() → new GameState
+3. Loop back to step 1 (RunSession)
+4. If "no": Break outer loop, exit game
+```
+
+If no factory: game exits immediately on death (backward compatible).
+
 ---
 
-## 9. Design Principles
+## 7. Test Coverage
 
-1. **Separation of concerns**: Engine (loop, parsing) is decoupled from content (rooms, items, world).
-2. **Dependency injection via interfaces**: `IInputOutput` enables testing without Console.
-3. **Open/closed for commands**: Adding a new command = one new class + one `Register()` call.
-4. **State is centralized**: `GameState` is the single source of truth. Commands read and mutate it.
-5. **Content is isolated**: `WorldBuilder` is the only place that knows what rooms/items exist.
-6. **No over-engineering**: No events, no ECS, no scripting engine. Just classes and methods.
+**227+ tests** organized by concern:
+
+- **GameStateTests** — State initialization, flags, inventory
+- **ParserTests** — Command parsing (verb, noun extraction)
+- **NarratorEngineTests** — Dynamic descriptions by flags/items
+- **CommandTests** — Generic test harness for all commands
+- **ExamineCommandTests** — Item/NPC examination
+- **TalkCommandTests** — Dialogue navigation, flag setting
+- **SaveLoadTests** — Persistence (threat, locks, flags)
+- **JsonWorldLoaderTests** — World file loading
+- **GameIntegrationTests** — End-to-end game flows
+- **GameWorldTests** — Room/exit/item integrity
+- **DroneTests** — Threat system mechanics
+- **TryAgainTests** — Restart-on-death feature
+- **EdgeCaseTests** — Boundary conditions
+
+All tests use `FakeInputOutput` (test harness) to mock I/O and capture output without touching the console.
+
+---
+
+## 8. Design Principles
+
+1. **Centralized strings** — All UI text in `GameMessages` (no hardcoding in commands)
+2. **I/O abstraction** — `IInputOutput` interface enables testability
+3. **Pure state** — `GameState` has no methods; commands read and mutate it
+4. **Command registry** — Open/closed principle: add commands without modifying engine
+5. **Narrator variants** — Room descriptions adapt to game state (flags + inventory)
+6. **Restart loop** — Optional `stateFactory` supports retry without process restart
+7. **Persistence** — Save/load includes all mutable state (threat, flags, locks)
+8. **No dead code** — `Parser.cs` (old wrapper) was removed; all parsing via `CommandParser`
