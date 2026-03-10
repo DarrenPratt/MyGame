@@ -385,8 +385,6 @@ public class JsonWorldLoaderTests : IDisposable
         // Assert
         Assert.Equal("server", state.WinRoomId);
     }
-<<<<<<< HEAD
-=======
 
     // ── Metadata forwarding ───────────────────────────────────────────────
 
@@ -706,8 +704,6 @@ public class JsonWorldLoaderTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => loader.Load(path));
     }
 
-<<<<<<< HEAD
-=======
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private static string MinimalJsonWith(string extra) => $$"""
