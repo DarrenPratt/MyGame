@@ -149,6 +149,70 @@ Removed duplicate `FindItem()` method from `LookCommand` that duplicated `GameSt
 
 **Recommendation:** Future shared-utility extractions should include comprehensive grep across all command files before closure.
 
+### Issue #39: Parser.cs Removal — Verified & Closed
+
+**Date:** 2026-03-10  
+**Status:** ✅ RESOLVED (Completed in Session 12, Verified in Session 17)  
+**Author:** Judy (C# Developer)
+
+**Summary:** Parser.cs, a 6-line wrapper around `CommandParser.Parse()`, has been successfully removed. All 6 tests in ParserTests.cs migrated to direct `CommandParser.Parse()` calls. Codebase grep confirms zero remaining references to the wrapper. All 227 tests pass with zero failures.
+
+**Resolution:** Issue #39 is fully closed. Parser.cs removal complete, no further action required.
+
+---
+
+### Issue #59: GameEngine Coupling Assessment — Resolved
+
+**Date:** 2026-03-10 (Session 17)  
+**Status:** RESOLVED — Current structure acceptable  
+**Author:** Johnny (Lead & Architect)
+
+**Summary:** GameEngine previously mixed drone threat escalation, UI rendering, and restart logic. DroneThreatSystem extraction (Issue #44) resolved the escalation coupling. Current GameEngine structure is clean and properly separated: session orchestration (banner → loop → endgame), delegate drone mechanics to DroneThreatSystem, delegate command dispatch to CommandRegistry, delegate content to GameMessages.
+
+**Analysis:** Each responsibility is isolated and single-purpose. Title banner rendering is a presentation concern that belongs in the orchestrator—not a coupling issue. Alternatives (TitleRenderer, GameSession wrappers) rejected as unnecessary abstractions without clarity benefit.
+
+**Design Rationale:**
+1. **Separation of Concerns** — Each system has one clear responsibility (GameEngine = session orchestration, DroneThreatSystem = threat mechanics, CommandRegistry = command dispatch, GameMessages = narrative/UI text, NarratorEngine = dynamic descriptions)
+2. **No New Abstractions Needed** — Current code is readable and maintainable; extraction would add boilerplate without benefit
+3. **Pragmatism** — Engine is 147 lines; all concerns properly delegated
+4. **Testability Achieved** — All 227 tests pass; mock I/O captures banner output for assertions
+
+**Consequences:** GameEngine remains the clear orchestrator for game session lifecycle. Future features (pause menu, settings, difficulty) can integrate cleanly into orchestrator without refactoring.
+
+**Recommendation:** Close Issue #59 as RESOLVED (NOT PLANNED). No follow-up work needed.
+
+**Files Affected:** `src/MyGame/Engine/GameEngine.cs` (147 lines), ARCHITECTURE.md, 227+ tests
+
+### Content Decision: Unused Items (Issue #54) — Rogue
+
+**Date:** 2026-03-10  
+**Status:** RESOLVED  
+**Author:** Rogue (Content Designer)
+
+**Problem:** Two items in the world JSON served no mechanical purpose (repair_kit and flyer). repair_kit description falsely implied mechanical use ("useful for repairing or bypassing locks") with null UseTargetId. flyer was pure flavor with no UseMessage.
+
+**Decision:** Reframe both items as **purely atmospheric flavor** while giving them proper UseMessages that activate when the player uses them. Keep UseTargetId: null (no mechanical hooks).
+
+**repair_kit Redesign:**
+- **New description:** Transformed from "broken promise" to "cultural artifact." Emphasizes undercity survival economy, salvage culture, jury-rigged repairs. Removes false mechanical implications.
+- **UseMessage:** "You turn the kit over in your hands. Whatever this was meant to fix, it tells a story—scavenged parts, crude welds, ingenuity born from desperation. Down here, broken things become tools. Tools become leverage. Leverage becomes freedom." (Player sees when using item)
+- **Tone:** Cyberpunk fatalism emphasizing information/leverage as currency
+
+**flyer Redesign:**
+- **New description:** Upgraded from generic orientation hint to undercity propaganda with contraband framing. Establishes information as social currency. "The paper's worn, but the message is clear—even the undercity has its rumor mill."
+- **UseMessage:** "You glance at the flyer again. In a city drowning in propaganda—corporate lies plastered on every corner—even a hand-scrawled tip sheet feels like contraband. Information trades fast down here. Faster than bullets." (Player sees when using item)
+- **Tone:** Cyberpunk cynicism about information economy and undercity as alternative civilization
+
+**Rationale:**
+- Arbitrary mechanical hooks would either create narrative confusion, undermine existing puzzle hierarchy, or require significant world redesign
+- UseMessages create moments of flavor that reward player interaction without mechanically overcomplicating world
+- Reinforces worldbuilding: salvage economy + information network strengthen central conflict (corporate megastructures vs. underground resistance)
+- Consistent with existing pattern (keycard and cred_chip also have UseMessages)
+
+**Implementation:** Content-only change in world JSON. UseCommand already supports null UseTargetId (displays UseMessage). No engine changes required. No test modifications. All 227 tests pass.
+
+**Future Expansion:** If mechanics desired later, add UseTargetId pointing to specific exit—no description changes needed. Current approach leaves door open without committing design.
+
 ## Governance
 
 - All meaningful changes require team consensus

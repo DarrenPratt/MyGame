@@ -315,4 +315,110 @@ public class ExamineCommandTests
         Assert.Equal(roomItemsBefore, state.CurrentRoom.Items.Count);
         Assert.Equal(inventoryBefore, state.Inventory.Count);
     }
+
+    // ──────────────────────────────────────────────
+    // Empty-string noun edge case
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public void Execute_EmptyStringNoun_MatchesFirstRoomItemByNameContains()
+    {
+        // Arrange — empty string passes the null guard but "" is contained by every non-empty name,
+        // so FindItem("") returns the first item in the room (Name.Contains("") is always true).
+        var state = WorldFactory.SingleRoomState();
+        var item = new Item
+        {
+            Id = "chip",
+            Name = "Cred Chip",
+            Description = "Worth more than it looks.",
+            CanPickUp = true
+        };
+        state.CurrentRoom.Items.Add(item);
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("examine", ""), state, io);
+
+        // Assert — empty string matches via Name.Contains(""), returns first item's description
+        Assert.True(io.OutputContains("Worth more than it looks."));
+    }
+
+    [Fact]
+    public void Execute_EmptyStringNoun_EmptyRoom_ShowsNotFoundError()
+    {
+        // Arrange — empty string noun with no items in room or inventory
+        var state = WorldFactory.SingleRoomState();
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("examine", ""), state, io);
+
+        // Assert — nothing to find; error output written
+        Assert.NotEmpty(io.Lines);
+    }
+
+    // ──────────────────────────────────────────────
+    // Alias verbs route to the same behavior
+    // ──────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("inspect")]
+    [InlineData("read")]
+    public void Execute_WithAliasVerb_StillFindsItem(string aliasVerb)
+    {
+        // Arrange — aliases all delegate to the same Execute; verb field is irrelevant at runtime
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Items.Add(new Item
+        {
+            Id = "note",
+            Name = "Scrawled Note",
+            Description = "Coordinates and a warning.",
+            CanPickUp = true
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand(aliasVerb, "note"), state, io);
+
+        // Assert
+        Assert.True(io.OutputContains("Coordinates and a warning."));
+    }
+
+    // ──────────────────────────────────────────────
+    // Multiple matching items — first match returned
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public void Execute_PartialNameMatchesMultipleItems_ReturnsFirstAddedItem()
+    {
+        // Arrange — both items match the partial noun "chip"; room order wins
+        var state = WorldFactory.SingleRoomState();
+        state.CurrentRoom.Items.Add(new Item
+        {
+            Id = "blue_chip",
+            Name = "Blue Chip",
+            Description = "First chip description.",
+            CanPickUp = true
+        });
+        state.CurrentRoom.Items.Add(new Item
+        {
+            Id = "red_chip",
+            Name = "Red Chip",
+            Description = "Second chip description.",
+            CanPickUp = true
+        });
+        var io = new FakeInputOutput();
+        var cmd = new ExamineCommand();
+
+        // Act
+        cmd.Execute(new ParsedCommand("examine", "chip"), state, io);
+
+        // Assert — first item added to room is returned
+        Assert.True(io.OutputContains("First chip description."));
+        Assert.False(io.OutputContains("Second chip description."));
+    }
 }
