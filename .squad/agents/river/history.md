@@ -136,3 +136,29 @@
 - **2026-03-09 — Judy implemented full game:** All 114 tests passing. Implementation matched your spec exactly. Your tests caught win condition ordering issue (lock check before win check) — correctly handled by Judy. Game complete and fully validated.
 - **2026-03-10 — Johnny filed improvement issues:** #38 (ExamineCommand tests), #40 (integration test helper registration). 205 tests passing. Room for test coverage expansion.
 - **2026-03-10 — Johnny completed codebase review:** Filed 14 improvement issues across squad. 3 assigned to River: #38 (ExamineCommand test coverage), #40 (integration test helper registration), #53 (LoadedWorld test coverage), #43 (NarratorEngine edge cases). Test coverage backlog identified; anticipatory test patterns from Session 2 provide foundation for implementation.
+
+### Session 2026-03-10 — Issue #35: Save/Load State Corruption Tests
+
+**Wrote 6 new tests** in `src/MyGame.Tests/SaveLoadTests.cs` for Judy's save/load corruption fix.
+
+**Tests added (all 13 SaveLoad tests pass — 6 pre-existing + 7 new):**
+
+| Test | What it guards |
+|---|---|
+| `SaveLoad_PreservesDroneThreatLevel` | DroneThreatLevel=3 survives save/load (player can't reset threat by reloading) |
+| `SaveLoad_PreservesDroneThreatThreshold` | Non-default threshold (6) restored after load |
+| `SaveLoad_PreservesUnlockedExit` | Unlocked exit stays unlocked after reload |
+| `SaveLoad_DroneThreatZeroByDefault_NotCorrupted` | Zero threat value not silently dropped during round-trip |
+| `SaveLoad_NonZeroThreatSurvivesRoundtrip` | High threat (5) survives round-trip; no exploit via save/load |
+| `SaveLoad_LockedExitRemainsLockedAfterReload` | Locked exit baseline — still locked after reload (regression guard) |
+
+**Architecture confirmed (from Judy's fix commit `70a62b2`):**
+- `DroneThreatThreshold` changed from `init` to `set` in GameState to allow LoadCommand to restore it
+- `SaveData` record extended with `DroneThreatLevel`, `DroneThreatThreshold`, `ExitLockStates` (roomId → direction → isLocked)
+- Old save files missing new fields gracefully default to 0/0/null (backward compatible)
+
+**Test design patterns used:**
+- `TwoRoomStateWithLockedExit()` private helper in test class creates minimal locked-exit world for exit tests
+- Each test uses the class-scoped `_testDirectory` (unique per `IDisposable` instance) — no file collisions
+- Separate filename per test (e.g. `"threat-level"`, `"unlock-exit"`) prevents cross-test file interference
+- Tests prove Judy's fix correct: all previously failing assertions now pass against the patched code

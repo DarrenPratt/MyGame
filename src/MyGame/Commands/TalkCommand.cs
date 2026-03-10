@@ -45,6 +45,8 @@ public class TalkCommand : ICommand
             return;
         }
 
+        state.Flags.Add($"{npc.Id}_met");
+
         while (true)
         {
             io.WriteLine($"{ColorConsole.Yellow(npc.Name)}: {current.Text}");
