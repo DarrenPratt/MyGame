@@ -14,8 +14,9 @@ coverage/
 *.msCoverageSourceRootsMapping_*
 *.CoverletSourceRootsMapping_*
 
-# Runtime artifacts
+# Save files
 savegame.json
+*.save.json
 
 # Squad: ignore runtime state (logs, inbox, sessions)
 .squad/orchestration-log/
