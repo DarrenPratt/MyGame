@@ -8,4 +8,5 @@ public class Item
     public bool CanPickUp { get; init; } = true;
     public string? UseTargetId { get; init; }
     public string? UseMessage { get; init; }
+    public string? TakeMessage { get; init; }
 }

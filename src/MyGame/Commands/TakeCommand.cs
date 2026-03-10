@@ -33,8 +33,8 @@ public class TakeCommand : ICommand
         state.CurrentRoom.Items.Remove(item);
         state.Inventory.Add(item);
 
-        if (item.Id == "data_chip")
-            io.WriteLine(GameMessages.Take.DataChipPickup);
+        if (item.TakeMessage is not null)
+            io.WriteLine(ColorConsole.Flavor(item.TakeMessage));
         else
             io.WriteLine($"You pick up the {ColorConsole.Yellow(item.Name)}.");
     }

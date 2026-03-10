@@ -66,7 +66,6 @@ public static class GameMessages
     public static class Take
     {
         public const string NoItem = "Take what?";
-        public const string DataChipPickup = "Your hand trembles as you pocket the chip. Years of work, dead contacts, all leading to this moment.";
     }
 
     public static class Use
