@@ -197,10 +197,38 @@
 
 ---
 
+## World Architecture Decisions — Judy (C# Developer)
+
+**Date:** 2026-03-10  
+**Status:** Complete  
+**PR:** #23
+
+### Decision: WorldBuilder Removed — JSON is the Sole World Source
+
+**Background:** `WorldBuilder.cs` was a fallback in `Program.cs` for when `neon-ledger.json` didn't exist. However, the JSON file is committed to the repo and always loaded, making `WorldBuilder.Build()` unreachable in practice.
+
+**Decision:** Delete `WorldBuilder.cs` and make the JSON world file required.
+
+**Rationale:** Eliminates maintenance burden of keeping two world sources in sync. Failing fast with `FileNotFoundException` is clearer than silently loading a fallback that can drift from the authoritative JSON.
+
+**Changes:**
+- Deleted `src/MyGame/Content/WorldBuilder.cs`
+- `Program.cs`: replaced if/else logic with explicit file-not-found guard
+- `GameWorldTests` and `GameIntegrationTests`: migrated to `JsonWorldLoader`, paths now match actual JSON map
+
+**Impact:**
+- `MyGame.Content` namespace no longer exists
+- All 168 tests pass against JSON world
+- JSON world map has two different connections than old WorldBuilder fallback: `bar→east→plaza` (was `lobby`) and `lobby→west→corridor` (was `bar`)
+- Winning path requires both `keycard` and `cred_chip`
+
+---
+
 ## Summary
 
 All major decisions documented and deduped. Team achieved:
 - ✅ Clean architecture with testability first
 - ✅ Rich cyberpunk narrative integrated with core mechanics
-- ✅ Comprehensive test coverage (114 tests)
+- ✅ Comprehensive test coverage (168 tests)
 - ✅ Full implementation matching architecture and passing all tests
+- ✅ JSON as sole world source, dead code removed
